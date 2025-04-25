@@ -19,9 +19,8 @@ public class BillManagerController {
     @GetMapping(path = "/pricing-plans")
     public ResponseEntity<Map<String, List<ServerConfig>>> getPricingPlans(@RequestParam String baseUrl,
                                                                            @RequestParam String authData,
-                                                                           @RequestParam Integer providerId,
                                                                            @RequestParam(required = false)
                                                                            Integer datacenterId) {
-        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, authData, providerId, datacenterId));
+        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, authData, datacenterId));
     }
 }

@@ -20,7 +20,6 @@ public class ServerConfig {
     private Map<String, String> prices;
     private String currency;
     private String serverType;
-    private Integer providerId;
     private Integer externalId;
     private ServerResources serverResources;
 }

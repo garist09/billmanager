@@ -29,8 +29,7 @@ public class BillManagerServiceImpl implements BillManagerService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, String authData, Integer providerId,
-                                                           Integer datacenterId) {
+    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, String authData, Integer datacenterId) {
         JsonNode json = getPricingPlansJson(baseUrl, authData, datacenterId);
 
         List<Map<String, String>> datacenters = new ArrayList<>();
@@ -46,7 +45,7 @@ public class BillManagerServiceImpl implements BillManagerService {
         }
 
         for (Map<String, String> datacenter : datacenters) {
-            addServerConfig(baseUrl, authData, providerId, datacenter, serverConfigList);
+            addServerConfig(baseUrl, authData, datacenter, serverConfigList);
         }
 
         return serverConfigList.stream().collect(Collectors.groupingBy(ServerConfig::getLocation));
@@ -100,7 +99,7 @@ public class BillManagerServiceImpl implements BillManagerService {
         return value;
     }
 
-    private ServerConfig parseServerConfigs(Integer providerId, Integer externalId, JsonNode server,
+    private ServerConfig parseServerConfigs(Integer externalId, JsonNode server,
                                             String datacenterName) {
         ServerResources serverResources = createServerResources(server);
         String name = getJsonNodeValue(server, TITLE);
@@ -126,14 +125,13 @@ public class BillManagerServiceImpl implements BillManagerService {
                 .prices(billingCycleMap)
                 .currency(currency)
                 .serverType("virtual")
-                .providerId(providerId)
                 .externalId(externalId)
                 .location(datacenterName)
                 .serverResources(serverResources)
                 .build();
     }
 
-    private void addServerConfig(String baseUrl, String authData, Integer providerId, Map<String, String> datacenter,
+    private void addServerConfig(String baseUrl, String authData, Map<String, String> datacenter,
                                  List<ServerConfig> serverConfigList) {
         Integer id = Integer.valueOf(datacenter.get("id"));
         String name = datacenter.get("name");
@@ -142,7 +140,7 @@ public class BillManagerServiceImpl implements BillManagerService {
         JsonNode servers = json.path("doc").path("list").get(0).path("elem");
         for (JsonNode server : servers) {
             Integer externalId = server.path("id").path("$").asInt();
-            ServerConfig serverConfig = parseServerConfigs(providerId, externalId, server, name);
+            ServerConfig serverConfig = parseServerConfigs(externalId, server, name);
             serverConfigList.add(serverConfig);
         }
     }
