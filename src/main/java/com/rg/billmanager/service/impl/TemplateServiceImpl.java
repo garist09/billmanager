@@ -86,7 +86,6 @@ public class TemplateServiceImpl implements TemplateService {
             OsTemplate osTemplate = new OsTemplate((String) values.getOrDefault("$key", ""),
                     (String) values.getOrDefault("$", ""),
                     (String) values.getOrDefault("$valuegroup", ""),
-                    (Double) values.getOrDefault("$cost", 0.0),
                     new ArrayList<>());
             osTemplateList.add(osTemplate);
             templates.putIfAbsent(osId, osTemplate);
@@ -113,6 +112,11 @@ public class TemplateServiceImpl implements TemplateService {
 
     private ArrayList<TemplatePrice> getTemplatePrices(ListItem listItem) {
         ArrayList<TemplatePrice> templatePriceList = new ArrayList<>();
+
+        if (listItem.getElem() == null) {
+            return new ArrayList<>();
+        }
+
         for (ListElem listElem : listItem.getElem()) {
             String label = Optional.ofNullable(listElem)
                     .map(ListElem::getLabel)
@@ -139,7 +143,7 @@ public class TemplateServiceImpl implements TemplateService {
 
     @SneakyThrows
     public TemplatePeriodPrices getTemplatesPricesForPeriod(String baseUrl, String authData,
-                                                                        Integer externalId, String period) {
+                                                            Integer externalId, String period) {
         Map<String, List<TemplatePrice>> periodPricesMap = new HashMap<>();
         String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.param&pricelist=%s&period=%s&out=json",
                 baseUrl, authData, externalId, period);

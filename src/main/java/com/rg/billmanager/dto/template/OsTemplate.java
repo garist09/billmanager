@@ -17,7 +17,6 @@ public class OsTemplate {
     private String id;
     private String name;
     private String family;
-    private Double cost;
     private List<AppTemplate> appTemplateList;
 
     public void addAppTemplate(AppTemplate appTemplate) {
