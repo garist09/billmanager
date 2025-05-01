@@ -1,5 +1,6 @@
 package com.rg.billmanager.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -8,7 +9,6 @@ import com.rg.billmanager.dto.ServerResources;
 import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.service.BillManagerService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,8 @@ public class BillManagerServiceImpl implements BillManagerService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, String authData, Integer datacenterId) {
+    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, String authData, Integer datacenterId)
+            throws JsonProcessingException {
         JsonNode json = getPricingPlansJson(baseUrl, authData, datacenterId);
 
         List<Map<String, String>> datacenters = new ArrayList<>();
@@ -51,8 +52,8 @@ public class BillManagerServiceImpl implements BillManagerService {
         return serverConfigList.stream().collect(Collectors.groupingBy(ServerConfig::getLocation));
     }
 
-    @SneakyThrows
-    private JsonNode getPricingPlansJson(String baseUrl, String authData, Integer datacenterId) {
+    private JsonNode getPricingPlansJson(String baseUrl, String authData, Integer datacenterId)
+            throws JsonProcessingException {
         String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.pricelist&out=json",
                 baseUrl, authData);
         url = datacenterId != null ? (url + "&datacenter=" + datacenterId) : url;
@@ -132,7 +133,7 @@ public class BillManagerServiceImpl implements BillManagerService {
     }
 
     private void addServerConfig(String baseUrl, String authData, Map<String, String> datacenter,
-                                 List<ServerConfig> serverConfigList) {
+                                 List<ServerConfig> serverConfigList) throws JsonProcessingException {
         Integer id = Integer.valueOf(datacenter.get("id"));
         String name = datacenter.get("name");
 

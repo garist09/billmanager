@@ -1,5 +1,6 @@
 package com.rg.billmanager.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rg.billmanager.dto.ServerConfig;
 import com.rg.billmanager.service.BillManagerService;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,8 @@ public class BillManagerController {
     public ResponseEntity<Map<String, List<ServerConfig>>> getPricingPlans(@RequestParam String baseUrl,
                                                                            @RequestParam String authData,
                                                                            @RequestParam(required = false)
-                                                                           Integer datacenterId) {
+                                                                           Integer datacenterId)
+            throws JsonProcessingException {
         return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, authData, datacenterId));
     }
 }

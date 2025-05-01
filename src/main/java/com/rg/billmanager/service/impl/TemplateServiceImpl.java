@@ -43,8 +43,8 @@ public class TemplateServiceImpl implements TemplateService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @SneakyThrows
-    public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId) {
+    public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
+            throws JsonProcessingException {
         String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.param&pricelist=%s&period=1&out=json",
                 baseUrl, authData, externalId);
 
@@ -111,7 +111,8 @@ public class TemplateServiceImpl implements TemplateService {
                 .toList();
     }
 
-    private Map<String, TemplatePeriodPrices> getAllTemplatesPrices(String baseUrl, String authData, Integer externalId) {
+    private Map<String, TemplatePeriodPrices> getAllTemplatesPrices(String baseUrl, String authData, Integer externalId)
+            throws JsonProcessingException {
         List<String> billingPeriods = List.of(BillingPeriod.DAILY.getCode(), BillingPeriod.MONTHLY.getCode(),
                 BillingPeriod.QUARTERLY.getCode(), BillingPeriod.SEMI_ANNUAL.getCode(), BillingPeriod.ANNUAL.getCode());
         Map<String, TemplatePeriodPrices> templatePricesByPeriods = new HashMap<>();
@@ -186,9 +187,8 @@ public class TemplateServiceImpl implements TemplateService {
         return templatePriceList;
     }
 
-    @SneakyThrows
-    public TemplatePeriodPrices getTemplatesPricesForPeriod(String baseUrl, String authData,
-                                                            Integer externalId, String period) {
+    private TemplatePeriodPrices getTemplatesPricesForPeriod(String baseUrl, String authData,
+                                                            Integer externalId, String period) throws JsonProcessingException {
         Map<String, List<TemplatePrice>> periodPricesMap = new HashMap<>();
         String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.param&pricelist=%s&period=%s&out=json",
                 baseUrl, authData, externalId, period);

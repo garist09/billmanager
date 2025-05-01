@@ -1,5 +1,6 @@
 package com.rg.billmanager.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rg.billmanager.dto.template.TemplatePlans;
 import com.rg.billmanager.service.TemplateService;
 import lombok.AllArgsConstructor;
@@ -7,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-
 
 @RestController
 @AllArgsConstructor
@@ -18,7 +17,8 @@ public class TemplateController {
     @GetMapping(path = "/template-configuration")
     public ResponseEntity<TemplatePlans> getOsTemplates(@RequestParam String baseUrl,
                                                         @RequestParam String authData,
-                                                        @RequestParam Integer externalId) {
+                                                        @RequestParam Integer externalId)
+            throws JsonProcessingException {
         return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, authData, externalId));
     }
 }
