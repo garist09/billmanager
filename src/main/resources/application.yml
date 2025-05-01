@@ -3,3 +3,7 @@ spring:
     name: billmanager
 server:
   port: 8090
+logging:
+  level:
+    org.springframework.boot.autoconfigure: INFO
+
