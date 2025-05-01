@@ -1,8 +1,15 @@
 package com.rg.billmanager.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.template.AppTemplate;
 import com.rg.billmanager.dto.template.ResponseDoc;
+import com.rg.billmanager.dto.template.TemplatePlans;
+import com.rg.billmanager.dto.template.addons.AddonMetadata;
+import com.rg.billmanager.dto.template.addons.Field;
+import com.rg.billmanager.dto.template.addons.FormMetadata;
+import com.rg.billmanager.dto.template.addons.Page;
 import com.rg.billmanager.dto.template.prices.TemplatePeriodPrices;
 import com.rg.billmanager.dto.template.prices.TemplatePrice;
 import com.rg.billmanager.dto.template.ValueProperty;
@@ -37,15 +44,30 @@ public class TemplateServiceImpl implements TemplateService {
     private final ObjectMapper objectMapper;
 
     @SneakyThrows
-    public Map<String, List<OsTemplate>> getTemplatesForPlans(String baseUrl, String authData, Integer externalId) {
-        Map<String, Object> templates = new HashMap<>();
-        List<OsTemplate> osTemplateList = new ArrayList<>();
+    public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId) {
         String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.param&pricelist=%s&period=1&out=json",
                 baseUrl, authData, externalId);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         TemplateResponse templateResponse = objectMapper.readValue(response.getBody(), TemplateResponse.class);
 
+        Map<String, List<OsTemplate>> groupedTemplates = getGroupedTemplates(templateResponse);
+
+        List<Field> fieldList = getAddons(response, templateResponse);
+
+        Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(baseUrl, authData, externalId);
+
+        String autoprolong = Optional.ofNullable(templateResponse)
+                .map(TemplateResponse::getDoc)
+                .map(doc -> doc.getAutoprolong().getValue())
+                .orElse("");
+
+        return new TemplatePlans(groupedTemplates, fieldList, templatePeriodPricesMap, autoprolong);
+    }
+
+    private Map<String, List<OsTemplate>> getGroupedTemplates(TemplateResponse templateResponse) {
+        Map<String, Object> templates = new HashMap<>();
+        List<OsTemplate> osTemplateList = new ArrayList<>();
         Map<String, List<OsTemplate>> groupedTemplatesMap = new HashMap<>();
 
         List<SListItem> sListItems = Optional.ofNullable(templateResponse)
@@ -67,13 +89,36 @@ public class TemplateServiceImpl implements TemplateService {
                 .collect(Collectors.groupingBy(OsTemplate::getFamily));
     }
 
-    public Map<String, TemplatePeriodPrices> getTemplatesPrices(String baseUrl, String authData, Integer externalId) {
+    private List<Field> getAddons(ResponseEntity<String> response, TemplateResponse templateResponse)
+            throws JsonProcessingException {
+        JsonNode jsonNode = objectMapper.readTree(response.getBody());
+
+        List<Page> metadataPages = Optional.ofNullable(templateResponse)
+                .map(TemplateResponse::getDoc)
+                .map(ResponseDoc::getMetadata)
+                .map(AddonMetadata::getForm)
+                .map(FormMetadata::getPages)
+                .orElse(new ArrayList<>());
+
+        return metadataPages.stream().map(Page::getFields)
+                .flatMap(fields -> fields.stream())
+                .filter(field -> field.getName().contains("addon_"))
+                .peek(field -> {
+                    JsonNode messagesNode = jsonNode.path("doc").path("messages").path("msg");
+                    field.setAddonName(messagesNode.path(field.getName()).toString());
+                    field.setAddonHintName(messagesNode.path("hint_" + field.getName()).toString());
+                })
+                .toList();
+    }
+
+    private Map<String, TemplatePeriodPrices> getAllTemplatesPrices(String baseUrl, String authData, Integer externalId) {
         List<String> billingPeriods = List.of(BillingPeriod.DAILY.getCode(), BillingPeriod.MONTHLY.getCode(),
                 BillingPeriod.QUARTERLY.getCode(), BillingPeriod.SEMI_ANNUAL.getCode(), BillingPeriod.ANNUAL.getCode());
         Map<String, TemplatePeriodPrices> templatePricesByPeriods = new HashMap<>();
 
         for (String billingPeriod : billingPeriods) {
-            templatePricesByPeriods.put(billingPeriod, getTemplatesPricesForPeriod(baseUrl, authData, externalId, billingPeriod));
+            templatePricesByPeriods.put(billingPeriod, getTemplatesPricesForPeriod(baseUrl, authData, externalId,
+                    billingPeriod));
         }
 
         return templatePricesByPeriods;
@@ -110,7 +155,7 @@ public class TemplateServiceImpl implements TemplateService {
         }
     }
 
-    private ArrayList<TemplatePrice> getTemplatePrices(ListItem listItem) {
+    private ArrayList<TemplatePrice> getTemplatePricesList(ListItem listItem) {
         ArrayList<TemplatePrice> templatePriceList = new ArrayList<>();
 
         if (listItem.getElem() == null) {
@@ -160,7 +205,7 @@ public class TemplateServiceImpl implements TemplateService {
             String listItemName = listItem.getName();
             if (listItemName.equals("pricelist_summary") || listItemName.equals("discount_summary") ||
                     listItemName.equals("total_summary")) {
-                periodPricesMap.put(listItem.getName(), getTemplatePrices(listItem));
+                periodPricesMap.put(listItem.getName(), getTemplatePricesList(listItem));
             }
         }
 

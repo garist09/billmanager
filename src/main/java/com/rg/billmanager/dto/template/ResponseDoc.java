@@ -1,6 +1,7 @@
 package com.rg.billmanager.dto.template;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.dto.template.slist.SListItem;
 import lombok.AllArgsConstructor;
@@ -18,4 +19,6 @@ import java.util.List;
 public class ResponseDoc {
     private List<SListItem> slist;
     private List<ListItem> list;
+    private AddonMetadata metadata;
+    private ValueProperty autoprolong;
 }
