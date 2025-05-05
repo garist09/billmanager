@@ -7,12 +7,14 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.rg.billmanager.dto.ServerConfig;
 import com.rg.billmanager.dto.ServerResources;
 import com.rg.billmanager.enums.BillingPeriod;
+import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.service.BillManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +23,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.rg.billmanager.constants.JsonFields.*;
+import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
+import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
+import static com.rg.billmanager.constants.UrlConstants.DATACENTER;
+import static com.rg.billmanager.constants.UrlConstants.FUNC;
+import static com.rg.billmanager.constants.UrlConstants.HTTPS;
+import static com.rg.billmanager.constants.UrlConstants.OUT;
+import static com.rg.billmanager.enums.FunctionName.ORDER_PRICELIST;
 
 @Service
 @RequiredArgsConstructor
@@ -54,9 +63,19 @@ public class BillManagerServiceImpl implements BillManagerService {
 
     private JsonNode getPricingPlansJson(String baseUrl, String authData, Integer datacenterId)
             throws JsonProcessingException {
-        String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.pricelist&out=json",
-                baseUrl, authData);
-        url = datacenterId != null ? (url + "&datacenter=" + datacenterId) : url;
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(baseUrl)
+                .path(BILLMGR)
+                .queryParam(AUTH_INFO, authData)
+                .queryParam(FUNC, ORDER_PRICELIST.getName())
+                .queryParam(OUT, OutFormat.JSON.getName());
+
+        if (datacenterId != null) {
+            uriBuilder.queryParam(DATACENTER, datacenterId);
+        }
+
+        String url = uriBuilder.build().toUriString();
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         return objectMapper.readTree(response.getBody());

@@ -22,12 +22,14 @@ import com.rg.billmanager.dto.template.slist.SListItem;
 import com.rg.billmanager.dto.template.OsTemplate;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.enums.BillingPeriod;
+import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.service.TemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +37,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.rg.billmanager.constants.JsonFields.PERIOD;
+import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
+import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
+import static com.rg.billmanager.constants.UrlConstants.FUNC;
+import static com.rg.billmanager.constants.UrlConstants.HTTPS;
+import static com.rg.billmanager.constants.UrlConstants.OUT;
+import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
+import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
 
 @Service
 @RequiredArgsConstructor
@@ -44,8 +55,8 @@ public class TemplateServiceImpl implements TemplateService {
 
     public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
             throws JsonProcessingException {
-        String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.param&pricelist=%s&period=1&out=json",
-                baseUrl, authData, externalId);
+        String monthPeriodNumber = "1";
+        String url = getUrlTemplatePrices(baseUrl, authData, externalId, monthPeriodNumber);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -189,8 +200,7 @@ public class TemplateServiceImpl implements TemplateService {
     private TemplatePeriodPrices getTemplatesPricesForPeriod(String baseUrl, String authData,
                                                             Integer externalId, String period) throws JsonProcessingException {
         Map<String, List<TemplatePrice>> periodPricesMap = new HashMap<>();
-        String url = String.format("https://%s/billmgr?authinfo=%s&func=v2.vds.order.param&pricelist=%s&period=%s&out=json",
-                baseUrl, authData, externalId, period);
+        String url = getUrlTemplatePrices(baseUrl, authData, externalId, period);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -209,5 +219,18 @@ public class TemplateServiceImpl implements TemplateService {
         }
 
         return new TemplatePeriodPrices(periodPricesMap);
+    }
+
+    private String getUrlTemplatePrices(String baseUrl, String authData, Integer externalId, String period) {
+        return UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(baseUrl)
+                .path(BILLMGR)
+                .queryParam(AUTH_INFO, authData)
+                .queryParam(FUNC, ORDER_PARAM.getName())
+                .queryParam(PRICELIST, externalId)
+                .queryParam(PERIOD, period)
+                .queryParam(OUT, OutFormat.JSON.getName())
+                .build().toString();
     }
 }

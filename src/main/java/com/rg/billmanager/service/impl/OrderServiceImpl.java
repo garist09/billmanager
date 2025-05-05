@@ -7,6 +7,7 @@ import com.rg.billmanager.dto.order.cart.items.CartItem;
 import com.rg.billmanager.dto.order.cart.items.CartItemsResponse;
 import com.rg.billmanager.dto.order.cart.items.CartTotal;
 import com.rg.billmanager.dto.template.DocumentResponse;
+import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
 import com.rg.billmanager.mapper.CartResponseMapper;
 import com.rg.billmanager.service.OrderService;
@@ -19,11 +20,21 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
+import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
+import static com.rg.billmanager.constants.UrlConstants.FUNC;
+import static com.rg.billmanager.constants.UrlConstants.HTTPS;
+import static com.rg.billmanager.constants.UrlConstants.OUT;
+import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
+import static com.rg.billmanager.enums.FunctionName.CART;
+import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +46,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void createOrder(OrderRequest orderRequest) throws JsonProcessingException {
-        String url = String.format("https://%s/billmgr", orderRequest.getBaseUrl());
+        String url = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(orderRequest.getBaseUrl())
+                .path(BILLMGR)
+                .build().toString();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -53,7 +68,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public CartItemsResponse getCartItems(String baseUrl, String authData) throws JsonProcessingException {
-        String url = String.format("https://%s/billmgr?authinfo=%s&func=cart&out=json", baseUrl, authData);
+        String url = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(baseUrl)
+                .path(BILLMGR)
+                .queryParam(AUTH_INFO, authData)
+                .queryParam(FUNC, CART.getName())
+                .queryParam(OUT, OutFormat.JSON.getName())
+                .build().toString();
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -67,25 +89,25 @@ public class OrderServiceImpl implements OrderService {
 
     private Map<String, String> getRequestParams(OrderRequest orderRequest) {
         Map<String, String> params = new HashMap<>();
-        params.put("authinfo", orderRequest.getAuthData());
+        params.put(AUTH_INFO, orderRequest.getAuthData());
         params.put("order_period", orderRequest.getOrderPeriod());
         params.put("show_btn", "pay_order");
         params.put("autoprolong_unavailable", "");
         params.put("autoprolong", orderRequest.getAutoprolong());
         params.put("item_id", "");
         params.put("lineitem_id", "");
-        params.put("pricelist", orderRequest.getExternalId().toString());
+        params.put(PRICELIST, orderRequest.getExternalId().toString());
         params.put("domain", "");
         params.put("force_use_new_cart", "on");
         params.put("ostempl", orderRequest.getOstempl());
         params.put("recipe", orderRequest.getRecipe());
         orderRequest.getAddons().entrySet().forEach(entry -> params.put(entry.getKey(), entry.getValue()));
         params.put("order_count", orderRequest.getOrderCount().toString());
-        params.put("func", "v2.vds.order.param");
+        params.put(FUNC, ORDER_PARAM.getName());
         params.put("sok", "ok");
         params.put("elid", "");
         params.put("clicked_button", "order");
-        params.put("out", "xjson");
+        params.put(OUT, OutFormat.XJSON.getName());
         return params;
     }
 
