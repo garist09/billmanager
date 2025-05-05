@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.template.AppTemplate;
+import com.rg.billmanager.dto.template.DocumentResponse;
 import com.rg.billmanager.dto.template.ResponseDoc;
 import com.rg.billmanager.dto.template.TemplatePlans;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
@@ -19,12 +20,10 @@ import com.rg.billmanager.dto.template.list.ListElem;
 import com.rg.billmanager.dto.template.list.PriceDetails;
 import com.rg.billmanager.dto.template.slist.SListItem;
 import com.rg.billmanager.dto.template.OsTemplate;
-import com.rg.billmanager.dto.template.TemplateResponse;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.service.TemplateService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -49,29 +48,29 @@ public class TemplateServiceImpl implements TemplateService {
                 baseUrl, authData, externalId);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-        TemplateResponse templateResponse = objectMapper.readValue(response.getBody(), TemplateResponse.class);
+        DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
 
-        Map<String, List<OsTemplate>> groupedTemplates = getGroupedTemplates(templateResponse);
+        Map<String, List<OsTemplate>> groupedTemplates = getGroupedTemplates(documentResponse);
 
-        List<Field> fieldList = getAddons(response, templateResponse);
+        List<Field> fieldList = getAddons(response, documentResponse);
 
         Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(baseUrl, authData, externalId);
 
-        String autoprolong = Optional.ofNullable(templateResponse)
-                .map(TemplateResponse::getDoc)
+        String autoprolong = Optional.ofNullable(documentResponse)
+                .map(DocumentResponse::getDoc)
                 .map(doc -> doc.getAutoprolong().getValue())
                 .orElse("");
 
         return new TemplatePlans(groupedTemplates, fieldList, templatePeriodPricesMap, autoprolong);
     }
 
-    private Map<String, List<OsTemplate>> getGroupedTemplates(TemplateResponse templateResponse) {
+    private Map<String, List<OsTemplate>> getGroupedTemplates(DocumentResponse documentResponse) {
         Map<String, Object> templates = new HashMap<>();
         List<OsTemplate> osTemplateList = new ArrayList<>();
         Map<String, List<OsTemplate>> groupedTemplatesMap = new HashMap<>();
 
-        List<SListItem> sListItems = Optional.ofNullable(templateResponse)
-                .map(TemplateResponse::getDoc)
+        List<SListItem> sListItems = Optional.ofNullable(documentResponse)
+                .map(DocumentResponse::getDoc)
                 .map(ResponseDoc::getSlist)
                 .orElse(new ArrayList<>());
 
@@ -89,12 +88,12 @@ public class TemplateServiceImpl implements TemplateService {
                 .collect(Collectors.groupingBy(OsTemplate::getFamily));
     }
 
-    private List<Field> getAddons(ResponseEntity<String> response, TemplateResponse templateResponse)
+    private List<Field> getAddons(ResponseEntity<String> response, DocumentResponse documentResponse)
             throws JsonProcessingException {
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
-        List<Page> metadataPages = Optional.ofNullable(templateResponse)
-                .map(TemplateResponse::getDoc)
+        List<Page> metadataPages = Optional.ofNullable(documentResponse)
+                .map(DocumentResponse::getDoc)
                 .map(ResponseDoc::getMetadata)
                 .map(AddonMetadata::getForm)
                 .map(FormMetadata::getPages)
@@ -194,10 +193,10 @@ public class TemplateServiceImpl implements TemplateService {
                 baseUrl, authData, externalId, period);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-        TemplateResponse templateResponse = objectMapper.readValue(response.getBody(), TemplateResponse.class);
+        DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
 
-        List<ListItem> listItems = Optional.ofNullable(templateResponse)
-                .map(TemplateResponse::getDoc)
+        List<ListItem> listItems = Optional.ofNullable(documentResponse)
+                .map(DocumentResponse::getDoc)
                 .map(ResponseDoc::getList)
                 .orElse(new ArrayList<>());
 

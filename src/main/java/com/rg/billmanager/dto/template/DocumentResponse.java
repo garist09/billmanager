@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TemplateResponse {
+public class DocumentResponse {
     private ResponseDoc doc;
 }
