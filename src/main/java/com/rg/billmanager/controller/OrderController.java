@@ -1,6 +1,7 @@
 package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rg.billmanager.dto.order.DeleteOrderRequest;
 import com.rg.billmanager.dto.order.OrderRequest;
 import com.rg.billmanager.dto.order.cart.items.CartItemsResponse;
 import com.rg.billmanager.service.OrderService;
@@ -19,9 +20,9 @@ import java.util.Map;
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping(path = "/order")
+    @PostMapping(path = "/add-cart-item")
     public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) throws JsonProcessingException {
-        orderService.createOrder(orderRequest);
+        orderService.addItemToCart(orderRequest);
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Order created successfully"
@@ -32,5 +33,14 @@ public class OrderController {
     public ResponseEntity<CartItemsResponse> getCartItems(@RequestParam String baseUrl, @RequestParam String authData)
             throws JsonProcessingException {
         return ResponseEntity.ok(orderService.getCartItems(baseUrl, authData));
+    }
+
+    @PostMapping(path = "/remove-cart-item")
+    public ResponseEntity<?> removeCartItem(@RequestBody DeleteOrderRequest deleteOrderRequest) throws JsonProcessingException {
+        orderService.removeCartItem(deleteOrderRequest);
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Item successfully have been removed"
+        ));
     }
 }

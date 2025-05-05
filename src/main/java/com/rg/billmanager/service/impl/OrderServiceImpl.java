@@ -2,6 +2,7 @@ package com.rg.billmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rg.billmanager.dto.order.DeleteOrderRequest;
 import com.rg.billmanager.dto.order.OrderRequest;
 import com.rg.billmanager.dto.order.cart.items.CartItem;
 import com.rg.billmanager.dto.order.cart.items.CartItemsResponse;
@@ -45,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartResponseMapper cartResponseMapper;
 
     @Override
-    public void createOrder(OrderRequest orderRequest) throws JsonProcessingException {
+    public void addItemToCart(OrderRequest orderRequest) throws JsonProcessingException {
         String url = UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(orderRequest.getBaseUrl())
@@ -85,6 +86,37 @@ public class OrderServiceImpl implements OrderService {
         List<CartItem> cartItems = cartResponseMapper.parseCartItems(documentResponse);
 
         return new CartItemsResponse(cartItems, cartTotal);
+    }
+
+    @Override
+    public void removeCartItem(DeleteOrderRequest deleteOrderRequest) throws JsonProcessingException {
+        String url = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(deleteOrderRequest.getBaseUrl())
+                .path(BILLMGR)
+                .build().toString();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(AUTH_INFO, deleteOrderRequest.getAuthData());
+        params.put("id", deleteOrderRequest.getCartItemId().toString());
+        params.put(FUNC, CART.getName());
+        params.put("promocode", "");
+        params.put("sok", "ok");
+        params.put("elid", "");
+        params.put("clicked_button", "delete");
+        params.put(OUT, OutFormat.XJSON.getName());
+
+        HttpEntity<String> request = buildFormUrlEncodedEntity(params);
+        String response = restTemplate.postForObject(url, request, String.class);
+
+        String error = errorUtility.parseJsonErrorMessage(response);
+
+        if (!error.isEmpty()) {
+            throw new InvalidOrderException(error);
+        }
     }
 
     private Map<String, String> getRequestParams(OrderRequest orderRequest) {
