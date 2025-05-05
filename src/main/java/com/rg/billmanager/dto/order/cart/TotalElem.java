@@ -1,7 +1,6 @@
-package com.rg.billmanager.dto.template.list;
+package com.rg.billmanager.dto.order.cart;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rg.billmanager.dto.template.ValueProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,13 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PriceDetails {
+public class TotalElem {
     private ValueProperty cost;
+    private ValueProperty count;
     private ValueProperty currency;
-    private ValueProperty discount;
-    private ValueProperty discountPercent;
-    private ValueProperty noDiscountCost;
-    // for discount_summary
-    private ValueProperty sign;
-    private ValueProperty period;
 }

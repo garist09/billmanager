@@ -1,6 +1,7 @@
 package com.rg.billmanager.dto.template;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.rg.billmanager.dto.order.cart.TotalElem;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.dto.template.slist.SListItem;
@@ -21,4 +22,5 @@ public class ResponseDoc {
     private List<ListItem> list;
     private AddonMetadata metadata;
     private ValueProperty autoprolong;
+    private TotalElem total;
 }
