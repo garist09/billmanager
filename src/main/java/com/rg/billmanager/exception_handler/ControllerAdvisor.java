@@ -1,6 +1,7 @@
 package com.rg.billmanager.exception_handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,5 +23,19 @@ public class ControllerAdvisor {
         List<String> errors = List.of("Invalid JSON format: " + ex.getOriginalMessage());
 
         return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidOrderException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrderException(InvalidOrderException ex) {
+        logger.warn("Invalid order request: {}", ex.getMessage(), ex);
+        List<String> errors = List.of(ex.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllUnhandledExceptions(Exception ex) {
+        logger.error("Unexpected server error: {}", ex.getMessage(), ex);
+        List<String> errors = List.of("Internal server error");
+        return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
