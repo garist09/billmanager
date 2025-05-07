@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-
 public class ErrorUtility {
     private static final Logger logger = LoggerFactory.getLogger(ErrorUtility.class);
 

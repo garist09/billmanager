@@ -1,6 +1,7 @@
 package com.rg.billmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.order.DeleteOrderRequest;
 import com.rg.billmanager.dto.order.OrderRequest;
@@ -29,11 +30,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
+import static com.rg.billmanager.constants.UrlConstants.AUTOPROLONG;
 import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
+import static com.rg.billmanager.constants.UrlConstants.DATACENTER;
 import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.HTTPS;
+import static com.rg.billmanager.constants.UrlConstants.ORDER_COUNT;
+import static com.rg.billmanager.constants.UrlConstants.ORDER_PERIOD;
+import static com.rg.billmanager.constants.UrlConstants.OSTEMPL;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
 import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
+import static com.rg.billmanager.constants.UrlConstants.RECIPE;
+import static com.rg.billmanager.constants.UrlConstants.REMOTE_ID;
+import static com.rg.billmanager.constants.UrlConstants.SKIP_BASKET;
+import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.CART;
 import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
 
@@ -46,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartResponseMapper cartResponseMapper;
 
     @Override
-    public void addItemToCart(OrderRequest orderRequest) throws JsonProcessingException {
+    public String createOrder(OrderRequest orderRequest) throws JsonProcessingException {
         String url = UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(orderRequest.getBaseUrl())
@@ -65,6 +75,8 @@ public class OrderServiceImpl implements OrderService {
         if (!error.isEmpty()) {
             throw new InvalidOrderException(error);
         }
+
+        return getItemId(response);
     }
 
     @Override
@@ -122,25 +134,34 @@ public class OrderServiceImpl implements OrderService {
     private Map<String, String> getRequestParams(OrderRequest orderRequest) {
         Map<String, String> params = new HashMap<>();
         params.put(AUTH_INFO, orderRequest.getAuthData());
-        params.put("order_period", orderRequest.getOrderPeriod());
-        params.put("show_btn", "pay_order");
-        params.put("autoprolong_unavailable", "");
-        params.put("autoprolong", orderRequest.getAutoprolong());
-        params.put("item_id", "");
-        params.put("lineitem_id", "");
-        params.put(PRICELIST, orderRequest.getExternalId().toString());
-        params.put("domain", "");
-        params.put("force_use_new_cart", "on");
-        params.put("ostempl", orderRequest.getOstempl());
-        params.put("recipe", orderRequest.getRecipe());
-        orderRequest.getAddons().entrySet().forEach(entry -> params.put(entry.getKey(), entry.getValue()));
-        params.put("order_count", orderRequest.getOrderCount().toString());
+        params.put(ORDER_PERIOD, orderRequest.getOrderPeriod());
+        params.put(AUTOPROLONG, "off");
+        if (orderRequest.getExternalId() != null) {
+            params.put(PRICELIST, orderRequest.getExternalId().toString());
+        }
+        if (orderRequest.getDatacenterId() != null) {
+            params.put(DATACENTER, orderRequest.getDatacenterId().toString());
+        }
+        params.put(OSTEMPL, orderRequest.getOstempl());
+        params.put(RECIPE, orderRequest.getRecipe());
+        if (orderRequest.getOrderCount() != null) {
+            params.put(ORDER_COUNT, orderRequest.getOrderCount().toString());
+        }
         params.put(FUNC, ORDER_PARAM.getName());
-        params.put("sok", "ok");
-        params.put("elid", "");
-        params.put("clicked_button", "order");
+        params.put(SOK, "ok");
+        params.put(SKIP_BASKET, "on");
+        if (orderRequest.getRemoteId() != null) {
+            params.put(REMOTE_ID, orderRequest.getRemoteId().toString());
+        }
         params.put(OUT, OutFormat.XJSON.getName());
         return params;
+    }
+
+    private String getItemId(String json) throws JsonProcessingException {
+        JsonNode root = objectMapper.readTree(json);
+        JsonNode lineItemIdNode = root.path("doc").path("item.id").path("$");
+
+        return !lineItemIdNode.isMissingNode() ? lineItemIdNode.asText() : "";
     }
 
     private HttpEntity<String> buildFormUrlEncodedEntity(Map<String, String> params) {
