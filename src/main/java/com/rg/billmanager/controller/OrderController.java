@@ -2,13 +2,17 @@ package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rg.billmanager.dto.order.OrderRequest;
+import com.rg.billmanager.dto.order.OrderStatusResponse;
 import com.rg.billmanager.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,6 +31,14 @@ public class OrderController {
                 "datacenterId", orderRequest.getDatacenterId(),
                 "remoteId", orderRequest.getRemoteId()
         ));
+    }
+
+    @GetMapping(path = "/order-status")
+    public ResponseEntity<List<OrderStatusResponse>> createOrder(@RequestParam String baseUrl,
+                                                                 @RequestParam String authData,
+                                                                 @RequestParam List<String> orderIds)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(orderService.getOrderStatus(baseUrl, authData, orderIds));
     }
 
 //    @GetMapping(path = "/cart-items")

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.order.DeleteOrderRequest;
 import com.rg.billmanager.dto.order.OrderRequest;
+import com.rg.billmanager.dto.order.OrderStatusResponse;
 import com.rg.billmanager.dto.order.cart.items.CartItem;
 import com.rg.billmanager.dto.order.cart.items.CartItemsResponse;
 import com.rg.billmanager.dto.order.cart.items.CartTotal;
@@ -12,6 +13,7 @@ import com.rg.billmanager.dto.template.DocumentResponse;
 import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
 import com.rg.billmanager.mapper.CartResponseMapper;
+import com.rg.billmanager.mapper.OrderResponseMapper;
 import com.rg.billmanager.service.OrderService;
 import com.rg.billmanager.utility.ErrorUtility;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,7 @@ import static com.rg.billmanager.constants.UrlConstants.SKIP_BASKET;
 import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.CART;
 import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
+import static com.rg.billmanager.enums.FunctionName.VDS;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
     private final ErrorUtility errorUtility;
     private final ObjectMapper objectMapper;
     private final CartResponseMapper cartResponseMapper;
+    private final OrderResponseMapper orderResponseMapper;
 
     @Override
     public String createOrder(OrderRequest orderRequest) throws JsonProcessingException {
@@ -77,6 +81,24 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return getItemId(response);
+    }
+
+    @Override
+    public List<OrderStatusResponse> getOrderStatus(String baseUrl, String authData, List<String> orderIds)
+            throws JsonProcessingException {
+        String url = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(baseUrl)
+                .path(BILLMGR)
+                .queryParam(AUTH_INFO, authData)
+                .queryParam(FUNC, VDS.getName())
+                .queryParam(OUT, OutFormat.XJSON.getName())
+                .build().toString();
+
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+        DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
+
+        return orderResponseMapper.parseOrderStatuses(documentResponse, orderIds);
     }
 
     @Override
