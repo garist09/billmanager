@@ -16,4 +16,6 @@ public class UrlConstants {
     public static final String SOK = "sok";
     public static final String SKIP_BASKET = "skipbasket";
     public static final String REMOTE_ID = "remoteid";
+    public static final String PERIOD = "period";
+    public static final String ELID = "elid";
 }

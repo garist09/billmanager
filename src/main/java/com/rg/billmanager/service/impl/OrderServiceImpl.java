@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.order.DeleteOrderRequest;
+import com.rg.billmanager.dto.order.ExtendOrderRequest;
 import com.rg.billmanager.dto.order.OrderRequest;
 import com.rg.billmanager.dto.order.OrderStatusResponse;
 import com.rg.billmanager.dto.order.cart.items.CartItem;
@@ -35,12 +36,14 @@ import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
 import static com.rg.billmanager.constants.UrlConstants.AUTOPROLONG;
 import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
 import static com.rg.billmanager.constants.UrlConstants.DATACENTER;
+import static com.rg.billmanager.constants.UrlConstants.ELID;
 import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.HTTPS;
 import static com.rg.billmanager.constants.UrlConstants.ORDER_COUNT;
 import static com.rg.billmanager.constants.UrlConstants.ORDER_PERIOD;
 import static com.rg.billmanager.constants.UrlConstants.OSTEMPL;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
+import static com.rg.billmanager.constants.UrlConstants.PERIOD;
 import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
 import static com.rg.billmanager.constants.UrlConstants.RECIPE;
 import static com.rg.billmanager.constants.UrlConstants.REMOTE_ID;
@@ -48,6 +51,7 @@ import static com.rg.billmanager.constants.UrlConstants.SKIP_BASKET;
 import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.CART;
 import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
+import static com.rg.billmanager.enums.FunctionName.SERVICE_PROLONG;
 import static com.rg.billmanager.enums.FunctionName.VDS;
 
 @Service
@@ -99,6 +103,28 @@ public class OrderServiceImpl implements OrderService {
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
 
         return orderResponseMapper.parseOrderStatuses(documentResponse, remoteIds);
+    }
+
+    @Override
+    public void extendService(ExtendOrderRequest extendOrderRequest) throws JsonProcessingException {
+        String url = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(extendOrderRequest.getBaseUrl())
+                .path(BILLMGR)
+                .build().toString();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        Map<String, String> params = getProlongServiceParams(extendOrderRequest);
+        HttpEntity<String> request = buildFormUrlEncodedEntity(params);
+        String response = restTemplate.postForObject(url, request, String.class);
+
+        String error = errorUtility.parseJsonErrorMessage(response);
+
+        if (!error.isEmpty()) {
+            throw new InvalidOrderException(error);
+        }
     }
 
     @Override
@@ -175,6 +201,18 @@ public class OrderServiceImpl implements OrderService {
         if (orderRequest.getRemoteId() != null) {
             params.put(REMOTE_ID, orderRequest.getRemoteId().toString());
         }
+        params.put(OUT, OutFormat.XJSON.getName());
+        return params;
+    }
+
+    private Map<String, String> getProlongServiceParams(ExtendOrderRequest extendOrderRequest) {
+        Map<String, String> params = new HashMap<>();
+        params.put(AUTH_INFO, extendOrderRequest.getAuthData());
+        params.put(ELID, extendOrderRequest.getOrderId());
+        params.put(PERIOD, extendOrderRequest.getPeriod());
+        params.put(FUNC, SERVICE_PROLONG.getName());
+        params.put(SOK, "ok");
+        params.put(SKIP_BASKET, "on");
         params.put(OUT, OutFormat.XJSON.getName());
         return params;
     }

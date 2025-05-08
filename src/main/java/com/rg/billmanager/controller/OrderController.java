@@ -1,6 +1,7 @@
 package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rg.billmanager.dto.order.ExtendOrderRequest;
 import com.rg.billmanager.dto.order.OrderRequest;
 import com.rg.billmanager.dto.order.OrderStatusResponse;
 import com.rg.billmanager.service.OrderService;
@@ -39,6 +40,17 @@ public class OrderController {
                                                                  @RequestParam List<String> remoteIds)
             throws JsonProcessingException {
         return ResponseEntity.ok(orderService.getOrderStatus(baseUrl, authData, remoteIds));
+    }
+
+    @PostMapping(path = "/extend-order")
+    public ResponseEntity<?> extendService(@RequestBody ExtendOrderRequest extendOrderRequest)
+            throws JsonProcessingException {
+        orderService.extendService(extendOrderRequest);
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Order extended successfully",
+                "orderId", extendOrderRequest.getOrderId()
+        ));
     }
 
 //    @GetMapping(path = "/cart-items")
