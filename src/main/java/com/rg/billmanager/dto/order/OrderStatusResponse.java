@@ -10,7 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderStatusResponse {
-    private String id;
+    private String remoteId;
     private String orderStatusId;
     private String orderStatus;
 }

@@ -36,9 +36,9 @@ public class OrderController {
     @GetMapping(path = "/order-status")
     public ResponseEntity<List<OrderStatusResponse>> createOrder(@RequestParam String baseUrl,
                                                                  @RequestParam String authData,
-                                                                 @RequestParam List<String> orderIds)
+                                                                 @RequestParam List<String> remoteIds)
             throws JsonProcessingException {
-        return ResponseEntity.ok(orderService.getOrderStatus(baseUrl, authData, orderIds));
+        return ResponseEntity.ok(orderService.getOrderStatus(baseUrl, authData, remoteIds));
     }
 
 //    @GetMapping(path = "/cart-items")

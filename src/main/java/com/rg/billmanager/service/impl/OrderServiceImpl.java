@@ -84,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderStatusResponse> getOrderStatus(String baseUrl, String authData, List<String> orderIds)
+    public List<OrderStatusResponse> getOrderStatus(String baseUrl, String authData, List<String> remoteIds)
             throws JsonProcessingException {
         String url = UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
@@ -98,7 +98,7 @@ public class OrderServiceImpl implements OrderService {
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
 
-        return orderResponseMapper.parseOrderStatuses(documentResponse, orderIds);
+        return orderResponseMapper.parseOrderStatuses(documentResponse, remoteIds);
     }
 
     @Override

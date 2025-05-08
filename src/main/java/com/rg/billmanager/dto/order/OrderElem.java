@@ -14,7 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderElem {
-    private ValueProperty id;
+    @JsonProperty("remoteid")
+    private ValueProperty remoteId;
     private ValueProperty status;
     @JsonProperty("item_status")
     private ItemStatusElem itemStatus;

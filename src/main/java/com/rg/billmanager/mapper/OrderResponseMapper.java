@@ -22,15 +22,15 @@ public class OrderResponseMapper {
                 .map(ResponseDoc::getElem)
                 .orElse(Collections.emptyList())
                 .stream()
-                .filter(elem -> elem.getId() != null && orderIds.contains(elem.getId().getValue()))
+                .filter(elem -> elem.getRemoteId() != null && orderIds.contains(elem.getRemoteId().getValue()))
                 .map(elem -> {
-                    String orderId = OptionalUtility.safeGet(elem.getId());
+                    String remoteId = OptionalUtility.safeGet(elem.getRemoteId());
                     String orderStatusId = OptionalUtility.safeGet(elem.getStatus());
                     String orderStatusName = Optional.ofNullable(elem.getItemStatus())
                             .map(ItemStatusElem::getStatusName)
                             .orElse("");
 
-                    return new OrderStatusResponse(orderId, orderStatusId, orderStatusName);
+                    return new OrderStatusResponse(remoteId, orderStatusId, orderStatusName);
                 })
                 .toList();
     }
