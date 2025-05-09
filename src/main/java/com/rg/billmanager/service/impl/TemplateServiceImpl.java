@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.template.AppTemplate;
 import com.rg.billmanager.dto.template.DocumentResponse;
 import com.rg.billmanager.dto.template.ResponseDoc;
+import com.rg.billmanager.dto.template.ServerInfoRequest;
 import com.rg.billmanager.dto.template.TemplatePlans;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.addons.Field;
@@ -23,8 +24,12 @@ import com.rg.billmanager.dto.template.OsTemplate;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.enums.OutFormat;
+import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
 import com.rg.billmanager.service.TemplateService;
+import com.rg.billmanager.utility.ErrorUtility;
+import com.rg.billmanager.utility.UrlUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -41,17 +46,23 @@ import java.util.stream.Collectors;
 import static com.rg.billmanager.constants.JsonFields.PERIOD;
 import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
 import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
+import static com.rg.billmanager.constants.UrlConstants.DOMAIN;
+import static com.rg.billmanager.constants.UrlConstants.ELID;
 import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.HTTPS;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
 import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
+import static com.rg.billmanager.constants.UrlConstants.REBOOT;
+import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
+import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 
 @Service
 @RequiredArgsConstructor
 public class TemplateServiceImpl implements TemplateService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final ErrorUtility errorUtility;
 
     public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
             throws JsonProcessingException {
@@ -73,6 +84,25 @@ public class TemplateServiceImpl implements TemplateService {
                 .orElse("");
 
         return new TemplatePlans(groupedTemplates, fieldList, templatePeriodPricesMap, autoprolong);
+    }
+
+    @Override
+    public void updateServerInfo(ServerInfoRequest serverInfoRequest) throws JsonProcessingException {
+        String url = UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(serverInfoRequest.getBaseUrl())
+                .path(BILLMGR)
+                .build().toString();
+
+        Map<String, String> params = getServerInfoRequestParams(serverInfoRequest);
+        HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
+        String response = restTemplate.postForObject(url, request, String.class);
+
+        String error = errorUtility.parseJsonErrorMessage(response);
+
+        if (!error.isEmpty()) {
+            throw new InvalidOrderException(error);
+        }
     }
 
     private Map<String, List<OsTemplate>> getGroupedTemplates(DocumentResponse documentResponse) {
@@ -232,5 +262,18 @@ public class TemplateServiceImpl implements TemplateService {
                 .queryParam(PERIOD, period)
                 .queryParam(OUT, OutFormat.JSON.getName())
                 .build().toString();
+    }
+
+    private Map<String, String> getServerInfoRequestParams(ServerInfoRequest serverInfoRequest) {
+        Map<String, String> params = new HashMap<>();
+        params.put(AUTH_INFO, serverInfoRequest.getAuthData());
+        params.put(ELID, serverInfoRequest.getId());
+        params.put(DOMAIN, serverInfoRequest.getHostname());
+        params.put(REBOOT, serverInfoRequest.getReboot());
+        params.put(FUNC, VDS_EDIT.getName());
+        serverInfoRequest.getAddons().entrySet().forEach(entry -> params.put(entry.getKey(), entry.getValue()));
+        params.put(SOK, "ok");
+        params.put(OUT, OutFormat.XJSON.getName());
+        return params;
     }
 }

@@ -17,11 +17,10 @@ import com.rg.billmanager.mapper.CartResponseMapper;
 import com.rg.billmanager.mapper.OrderResponseMapper;
 import com.rg.billmanager.service.OrderService;
 import com.rg.billmanager.utility.ErrorUtility;
+import com.rg.billmanager.utility.UrlUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -30,7 +29,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
 import static com.rg.billmanager.constants.UrlConstants.AUTOPROLONG;
@@ -71,11 +69,8 @@ public class OrderServiceImpl implements OrderService {
                 .path(BILLMGR)
                 .build().toString();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         Map<String, String> params = getRequestParams(orderRequest);
-        HttpEntity<String> request = buildFormUrlEncodedEntity(params);
+        HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
 
         String error = errorUtility.parseJsonErrorMessage(response);
@@ -113,11 +108,8 @@ public class OrderServiceImpl implements OrderService {
                 .path(BILLMGR)
                 .build().toString();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         Map<String, String> params = getProlongServiceParams(extendOrderRequest);
-        HttpEntity<String> request = buildFormUrlEncodedEntity(params);
+        HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
 
         String error = errorUtility.parseJsonErrorMessage(response);
@@ -156,9 +148,6 @@ public class OrderServiceImpl implements OrderService {
                 .path(BILLMGR)
                 .build().toString();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         Map<String, String> params = new HashMap<>();
         params.put(AUTH_INFO, deleteOrderRequest.getAuthData());
         params.put("id", deleteOrderRequest.getCartItemId().toString());
@@ -169,7 +158,7 @@ public class OrderServiceImpl implements OrderService {
         params.put("clicked_button", "delete");
         params.put(OUT, OutFormat.XJSON.getName());
 
-        HttpEntity<String> request = buildFormUrlEncodedEntity(params);
+        HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
 
         String error = errorUtility.parseJsonErrorMessage(response);
@@ -222,16 +211,5 @@ public class OrderServiceImpl implements OrderService {
         JsonNode lineItemIdNode = root.path("doc").path("item.id").path("$");
 
         return !lineItemIdNode.isMissingNode() ? lineItemIdNode.asText() : "";
-    }
-
-    private HttpEntity<String> buildFormUrlEncodedEntity(Map<String, String> params) {
-        String body = params.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .collect(Collectors.joining("&"));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        return new HttpEntity<>(body, headers);
     }
 }

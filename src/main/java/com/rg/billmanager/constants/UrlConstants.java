@@ -18,4 +18,6 @@ public class UrlConstants {
     public static final String REMOTE_ID = "remoteid";
     public static final String PERIOD = "period";
     public static final String ELID = "elid";
+    public static final String DOMAIN = "domain";
+    public static final String REBOOT = "reboot";
 }

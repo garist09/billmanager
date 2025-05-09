@@ -10,7 +10,8 @@ public enum FunctionName {
     ORDER_PRICELIST("v2.vds.order.pricelist"),
     CART("cart"),
     VDS("vds"),
-    SERVICE_PROLONG("service.prolong");
+    SERVICE_PROLONG("service.prolong"),
+    VDS_EDIT("vds.edit");
 
     private final String name;
 }
