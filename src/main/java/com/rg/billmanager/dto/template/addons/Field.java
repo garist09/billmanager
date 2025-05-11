@@ -28,4 +28,5 @@ public class Field {
     private List<Select> selects;
     private String addonName;
     private String addonHintName;
+    private String addonValue;
 }

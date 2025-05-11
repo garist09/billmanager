@@ -17,4 +17,6 @@ import java.util.List;
 public class Page {
     @JsonProperty("field")
     private List<Field> fields;
+    @JsonProperty("$name")
+    private String name;
 }

@@ -2,6 +2,7 @@ package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rg.billmanager.dto.template.ServerInfoRequest;
+import com.rg.billmanager.dto.template.ServerInfoResponse;
 import com.rg.billmanager.dto.template.TemplatePlans;
 import com.rg.billmanager.service.TemplateService;
 import lombok.AllArgsConstructor;
@@ -36,5 +37,13 @@ public class TemplateController {
                 "message", "Order created successfully",
                 "orderId", serverInfoRequest.getId()
         ));
+    }
+
+    @GetMapping(path = "/server-info")
+    public ResponseEntity<ServerInfoResponse> getServerInfo(@RequestParam String baseUrl,
+                                                            @RequestParam String authData,
+                                                            @RequestParam Integer orderId)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, authData, orderId));
     }
 }

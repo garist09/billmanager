@@ -7,6 +7,7 @@ import com.rg.billmanager.dto.template.AppTemplate;
 import com.rg.billmanager.dto.template.DocumentResponse;
 import com.rg.billmanager.dto.template.ResponseDoc;
 import com.rg.billmanager.dto.template.ServerInfoRequest;
+import com.rg.billmanager.dto.template.ServerInfoResponse;
 import com.rg.billmanager.dto.template.TemplatePlans;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.addons.Field;
@@ -25,6 +26,7 @@ import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
+import com.rg.billmanager.mapper.TemplateResponseMapper;
 import com.rg.billmanager.service.TemplateService;
 import com.rg.billmanager.utility.ErrorUtility;
 import com.rg.billmanager.utility.UrlUtils;
@@ -41,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.rg.billmanager.constants.JsonFields.PERIOD;
@@ -60,9 +63,12 @@ import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 @Service
 @RequiredArgsConstructor
 public class TemplateServiceImpl implements TemplateService {
+    private static final String IPV4_ADDON_NAME = "Публичные IPv4-адреса";
+
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final ErrorUtility errorUtility;
+    private final TemplateResponseMapper templateResponseMapper;
 
     public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
             throws JsonProcessingException {
@@ -103,6 +109,19 @@ public class TemplateServiceImpl implements TemplateService {
         if (!error.isEmpty()) {
             throw new InvalidOrderException(error);
         }
+    }
+
+    @Override
+    public ServerInfoResponse getServerInfo(String baseUrl, String authData, Integer orderId)
+            throws JsonProcessingException {
+        String url = getServerInfoUrl(baseUrl, authData, orderId);
+
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+        DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
+
+        List<Field> addons = templateResponseMapper.parseAddons(response, documentResponse, Set.of(IPV4_ADDON_NAME));
+
+        return templateResponseMapper.mapDocumentResponseToServerInfoResponse(documentResponse, addons);
     }
 
     private Map<String, List<OsTemplate>> getGroupedTemplates(DocumentResponse documentResponse) {
@@ -275,5 +294,17 @@ public class TemplateServiceImpl implements TemplateService {
         params.put(SOK, "ok");
         params.put(OUT, OutFormat.XJSON.getName());
         return params;
+    }
+
+    private String getServerInfoUrl(String baseUrl, String authData, Integer orderId) {
+        return UriComponentsBuilder.newInstance()
+                .scheme(HTTPS)
+                .host(baseUrl)
+                .path(BILLMGR)
+                .queryParam(AUTH_INFO, authData)
+                .queryParam(FUNC, VDS_EDIT.getName())
+                .queryParam(ELID, orderId)
+                .queryParam(OUT, OutFormat.XJSON.getName())
+                .build().toString();
     }
 }

@@ -1,6 +1,7 @@
 package com.rg.billmanager.dto.template;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rg.billmanager.dto.order.OrderElem;
 import com.rg.billmanager.dto.order.cart.TotalElem;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
@@ -25,4 +26,19 @@ public class ResponseDoc {
     private ValueProperty autoprolong;
     private TotalElem total;
     private List<OrderElem> elem;
+    private ValueProperty password;
+    private ValueProperty recipe;
+    private ValueProperty ostempl;
+    private ValueProperty ip;
+    @JsonProperty("ipv6_subnet")
+    private ValueProperty ipv6Subnet;
+    @JsonProperty("createdate")
+    private ValueProperty creationDate;
+    @JsonProperty("real_expiredate")
+    private ValueProperty expirationDate;
+    @JsonProperty("remoteid")
+    private ValueProperty remoteId;
+    private ValueProperty reboot;
+    private ValueProperty id;
+    private ValueProperty domain;
 }
