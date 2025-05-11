@@ -2,7 +2,7 @@ package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rg.billmanager.contracts.requests.ExtendOrderRequest;
-import com.rg.billmanager.contracts.requests.OrderRequest;
+import com.rg.billmanager.contracts.requests.CreateOrderRequest;
 import com.rg.billmanager.contracts.responses.OrderStatusResponse;
 import com.rg.billmanager.service.OrderService;
 import lombok.AllArgsConstructor;
@@ -22,22 +22,22 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping(path = "/order")
-    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) throws JsonProcessingException {
-        String orderId = orderService.createOrder(orderRequest);
+    public ResponseEntity<?> createOrder(@RequestBody CreateOrderRequest createOrderRequest) throws JsonProcessingException {
+        String orderId = orderService.createOrder(createOrderRequest);
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Order created successfully",
                 "orderId", orderId,
-                "externalId", orderRequest.getExternalId(),
-                "datacenterId", orderRequest.getDatacenterId(),
-                "remoteId", orderRequest.getRemoteId()
+                "externalId", createOrderRequest.getExternalId(),
+                "datacenterId", createOrderRequest.getDatacenterId(),
+                "remoteId", createOrderRequest.getRemoteId()
         ));
     }
 
     @GetMapping(path = "/order-status")
-    public ResponseEntity<List<OrderStatusResponse>> createOrder(@RequestParam String baseUrl,
-                                                                 @RequestParam String authData,
-                                                                 @RequestParam List<String> remoteIds)
+    public ResponseEntity<List<OrderStatusResponse>> getOrderStatus(@RequestParam String baseUrl,
+                                                                    @RequestParam String authData,
+                                                                    @RequestParam List<String> remoteIds)
             throws JsonProcessingException {
         return ResponseEntity.ok(orderService.getOrderStatus(baseUrl, authData, remoteIds));
     }

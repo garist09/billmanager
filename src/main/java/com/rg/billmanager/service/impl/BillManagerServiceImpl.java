@@ -4,17 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.rg.billmanager.contracts.requests.PricingPlanRequest;
 import com.rg.billmanager.dto.ServerConfig;
 import com.rg.billmanager.dto.ServerResources;
 import com.rg.billmanager.enums.BillingPeriod;
-import com.rg.billmanager.enums.OutFormat;
+import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.service.BillManagerService;
+import com.rg.billmanager.utility.requestbuilder.UrlBuilderRegistry;
+import com.rg.billmanager.utility.requestbuilder.interfaces.RequestUrlBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,19 +25,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.rg.billmanager.constants.JsonFields.*;
-import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
-import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
-import static com.rg.billmanager.constants.UrlConstants.DATACENTER;
-import static com.rg.billmanager.constants.UrlConstants.FUNC;
-import static com.rg.billmanager.constants.UrlConstants.HTTPS;
-import static com.rg.billmanager.constants.UrlConstants.OUT;
-import static com.rg.billmanager.enums.FunctionName.ORDER_PRICELIST;
 
 @Service
 @RequiredArgsConstructor
 public class BillManagerServiceImpl implements BillManagerService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final UrlBuilderRegistry urlBuilderRegistry;
 
     @Override
     public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, String authData, Integer datacenterId)
@@ -63,19 +59,9 @@ public class BillManagerServiceImpl implements BillManagerService {
 
     private JsonNode getPricingPlansJson(String baseUrl, String authData, Integer datacenterId)
             throws JsonProcessingException {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .scheme(HTTPS)
-                .host(baseUrl)
-                .path(BILLMGR)
-                .queryParam(AUTH_INFO, authData)
-                .queryParam(FUNC, ORDER_PRICELIST.getName())
-                .queryParam(OUT, OutFormat.JSON.getName());
+        RequestUrlBuilder<PricingPlanRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.PRICING_PLAN);
 
-        if (datacenterId != null) {
-            uriBuilder.queryParam(DATACENTER, datacenterId);
-        }
-
-        String url = uriBuilder.build().toUriString();
+        String url = urlBuilder.buildUrl(new PricingPlanRequest(baseUrl, authData, datacenterId));
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         return objectMapper.readTree(response.getBody());

@@ -3,10 +3,12 @@ package com.rg.billmanager.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rg.billmanager.contracts.requests.ServerInfoRequest;
+import com.rg.billmanager.contracts.requests.TemplatePlanRequest;
 import com.rg.billmanager.dto.template.AppTemplate;
 import com.rg.billmanager.dto.DocumentResponse;
 import com.rg.billmanager.dto.ResponseDoc;
-import com.rg.billmanager.contracts.requests.ServerInfoRequest;
+import com.rg.billmanager.contracts.requests.UpdateServerInfoRequest;
 import com.rg.billmanager.contracts.responses.ServerInfoResponse;
 import com.rg.billmanager.contracts.responses.TemplatePlansResponse;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
@@ -24,19 +26,22 @@ import com.rg.billmanager.dto.template.slist.SListItem;
 import com.rg.billmanager.dto.template.OsTemplate;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.enums.BillingPeriod;
-import com.rg.billmanager.enums.OutFormat;
+import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
 import com.rg.billmanager.mapper.TemplateResponseMapper;
 import com.rg.billmanager.service.TemplateService;
 import com.rg.billmanager.utility.ErrorUtility;
 import com.rg.billmanager.utility.UrlUtils;
+import com.rg.billmanager.utility.requestbuilder.ParamBuilderRegistry;
+import com.rg.billmanager.utility.requestbuilder.UrlBuilderRegistry;
+import com.rg.billmanager.utility.requestbuilder.interfaces.RequestParamBuilder;
+import com.rg.billmanager.utility.requestbuilder.interfaces.RequestUrlBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,20 +50,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.rg.billmanager.constants.JsonFields.PERIOD;
-import static com.rg.billmanager.constants.UrlConstants.AUTH_INFO;
-import static com.rg.billmanager.constants.UrlConstants.BILLMGR;
-import static com.rg.billmanager.constants.UrlConstants.DOMAIN;
-import static com.rg.billmanager.constants.UrlConstants.ELID;
-import static com.rg.billmanager.constants.UrlConstants.FUNC;
-import static com.rg.billmanager.constants.UrlConstants.HTTPS;
-import static com.rg.billmanager.constants.UrlConstants.OUT;
-import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
-import static com.rg.billmanager.constants.UrlConstants.REBOOT;
-import static com.rg.billmanager.constants.UrlConstants.SOK;
-import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
-import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 
 @Service
 @RequiredArgsConstructor
@@ -69,11 +60,16 @@ public class TemplateServiceImpl implements TemplateService {
     private final ObjectMapper objectMapper;
     private final ErrorUtility errorUtility;
     private final TemplateResponseMapper templateResponseMapper;
+    private final ParamBuilderRegistry paramBuilderRegistry;
+    private final UrlBuilderRegistry urlBuilderRegistry;
 
     public TemplatePlansResponse getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
             throws JsonProcessingException {
+        RequestUrlBuilder<TemplatePlanRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.TEMPLATE_PLAN);
         String monthPeriodNumber = "1";
-        String url = getUrlTemplatePrices(baseUrl, authData, externalId, monthPeriodNumber);
+        TemplatePlanRequest templatePlanRequest = new TemplatePlanRequest(baseUrl, authData, externalId,
+               monthPeriodNumber);
+        String url = urlBuilder.buildUrl(templatePlanRequest);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -82,7 +78,7 @@ public class TemplateServiceImpl implements TemplateService {
 
         List<Field> fieldList = getAddons(response, documentResponse);
 
-        Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(baseUrl, authData, externalId);
+        Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(urlBuilder, templatePlanRequest);
 
         String autoprolong = Optional.ofNullable(documentResponse)
                 .map(DocumentResponse::getDoc)
@@ -93,14 +89,15 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
-    public void updateServerInfo(ServerInfoRequest serverInfoRequest) throws JsonProcessingException {
-        String url = UriComponentsBuilder.newInstance()
-                .scheme(HTTPS)
-                .host(serverInfoRequest.getBaseUrl())
-                .path(BILLMGR)
-                .build().toString();
+    public void updateServerInfo(UpdateServerInfoRequest updateServerInfoRequest) throws JsonProcessingException {
+        RequestUrlBuilder<UpdateServerInfoRequest> urlBuilder = urlBuilderRegistry
+                .getUrlBuilder(RequestType.UPDATE_SERVER_INFO);
+        RequestParamBuilder<UpdateServerInfoRequest> paramBuilder = paramBuilderRegistry
+                .getParamBuilder(RequestType.UPDATE_SERVER_INFO);
 
-        Map<String, String> params = getServerInfoRequestParams(serverInfoRequest);
+        String url = urlBuilder.buildUrl(updateServerInfoRequest);
+        Map<String, String> params = paramBuilder.buildParams(updateServerInfoRequest);
+
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
 
@@ -114,7 +111,8 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public ServerInfoResponse getServerInfo(String baseUrl, String authData, Integer orderId)
             throws JsonProcessingException {
-        String url = getServerInfoUrl(baseUrl, authData, orderId);
+        RequestUrlBuilder<ServerInfoRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.SERVER_INFO);
+        String url = urlBuilder.buildUrl(new ServerInfoRequest(baseUrl, authData, orderId));
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -170,15 +168,16 @@ public class TemplateServiceImpl implements TemplateService {
                 .toList();
     }
 
-    private Map<String, TemplatePeriodPrices> getAllTemplatesPrices(String baseUrl, String authData, Integer externalId)
+    private Map<String, TemplatePeriodPrices> getAllTemplatesPrices(RequestUrlBuilder<TemplatePlanRequest> urlBuilder,
+                                                                    TemplatePlanRequest templatePlanRequest)
             throws JsonProcessingException {
         List<String> billingPeriods = List.of(BillingPeriod.DAILY.getCode(), BillingPeriod.MONTHLY.getCode(),
                 BillingPeriod.QUARTERLY.getCode(), BillingPeriod.SEMI_ANNUAL.getCode(), BillingPeriod.ANNUAL.getCode());
         Map<String, TemplatePeriodPrices> templatePricesByPeriods = new HashMap<>();
 
         for (String billingPeriod : billingPeriods) {
-            templatePricesByPeriods.put(billingPeriod, getTemplatesPricesForPeriod(baseUrl, authData, externalId,
-                    billingPeriod));
+            templatePlanRequest.setPeriod(billingPeriod);
+            templatePricesByPeriods.put(billingPeriod, getTemplatesPricesForPeriod(urlBuilder, templatePlanRequest));
         }
 
         return templatePricesByPeriods;
@@ -246,10 +245,11 @@ public class TemplateServiceImpl implements TemplateService {
         return templatePriceList;
     }
 
-    private TemplatePeriodPrices getTemplatesPricesForPeriod(String baseUrl, String authData,
-                                                            Integer externalId, String period) throws JsonProcessingException {
+    private TemplatePeriodPrices getTemplatesPricesForPeriod(RequestUrlBuilder<TemplatePlanRequest> urlBuilder,
+                                                             TemplatePlanRequest templatePlanRequest)
+            throws JsonProcessingException {
         Map<String, List<TemplatePrice>> periodPricesMap = new HashMap<>();
-        String url = getUrlTemplatePrices(baseUrl, authData, externalId, period);
+        String url = urlBuilder.buildUrl(templatePlanRequest);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -268,43 +268,5 @@ public class TemplateServiceImpl implements TemplateService {
         }
 
         return new TemplatePeriodPrices(periodPricesMap);
-    }
-
-    private String getUrlTemplatePrices(String baseUrl, String authData, Integer externalId, String period) {
-        return UriComponentsBuilder.newInstance()
-                .scheme(HTTPS)
-                .host(baseUrl)
-                .path(BILLMGR)
-                .queryParam(AUTH_INFO, authData)
-                .queryParam(FUNC, ORDER_PARAM.getName())
-                .queryParam(PRICELIST, externalId)
-                .queryParam(PERIOD, period)
-                .queryParam(OUT, OutFormat.JSON.getName())
-                .build().toString();
-    }
-
-    private Map<String, String> getServerInfoRequestParams(ServerInfoRequest serverInfoRequest) {
-        Map<String, String> params = new HashMap<>();
-        params.put(AUTH_INFO, serverInfoRequest.getAuthData());
-        params.put(ELID, serverInfoRequest.getId());
-        params.put(DOMAIN, serverInfoRequest.getHostname());
-        params.put(REBOOT, serverInfoRequest.getReboot());
-        params.put(FUNC, VDS_EDIT.getName());
-        serverInfoRequest.getAddons().entrySet().forEach(entry -> params.put(entry.getKey(), entry.getValue()));
-        params.put(SOK, "ok");
-        params.put(OUT, OutFormat.XJSON.getName());
-        return params;
-    }
-
-    private String getServerInfoUrl(String baseUrl, String authData, Integer orderId) {
-        return UriComponentsBuilder.newInstance()
-                .scheme(HTTPS)
-                .host(baseUrl)
-                .path(BILLMGR)
-                .queryParam(AUTH_INFO, authData)
-                .queryParam(FUNC, VDS_EDIT.getName())
-                .queryParam(ELID, orderId)
-                .queryParam(OUT, OutFormat.XJSON.getName())
-                .build().toString();
     }
 }

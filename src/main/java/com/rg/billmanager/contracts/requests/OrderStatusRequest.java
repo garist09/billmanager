@@ -5,12 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServerInfoRequest {
+public class OrderStatusRequest {
     private String baseUrl;
     private String authData;
-    private Integer orderId;
+    private List<String> remoteIds;
 }

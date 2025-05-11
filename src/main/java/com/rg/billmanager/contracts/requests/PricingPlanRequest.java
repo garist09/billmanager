@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServerInfoRequest {
+public class PricingPlanRequest {
     private String baseUrl;
     private String authData;
-    private Integer orderId;
+    private Integer datacenterId;
 }

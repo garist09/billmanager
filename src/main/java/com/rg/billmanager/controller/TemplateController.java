@@ -1,7 +1,7 @@
 package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rg.billmanager.contracts.requests.ServerInfoRequest;
+import com.rg.billmanager.contracts.requests.UpdateServerInfoRequest;
 import com.rg.billmanager.contracts.responses.ServerInfoResponse;
 import com.rg.billmanager.contracts.responses.TemplatePlansResponse;
 import com.rg.billmanager.service.TemplateService;
@@ -29,13 +29,13 @@ public class TemplateController {
     }
 
     @PostMapping(path = "/server-info")
-    public ResponseEntity<?> updateServerInfo(@RequestBody ServerInfoRequest serverInfoRequest)
+    public ResponseEntity<?> updateServerInfo(@RequestBody UpdateServerInfoRequest updateServerInfoRequest)
             throws JsonProcessingException {
-        templateService.updateServerInfo(serverInfoRequest);
+        templateService.updateServerInfo(updateServerInfoRequest);
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Order created successfully",
-                "orderId", serverInfoRequest.getId()
+                "orderId", updateServerInfoRequest.getId()
         ));
     }
 

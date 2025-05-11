@@ -5,12 +5,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServerInfoRequest {
+public class UpdateServerInfoRequest {
     private String baseUrl;
     private String authData;
-    private Integer orderId;
+    private String id;
+    private String hostname;
+    private String reboot;
+    private Map<String, String> addons;
 }

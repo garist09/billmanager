@@ -9,17 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderRequest {
+public class TemplatePlanRequest {
     private String baseUrl;
     private String authData;
     private Integer externalId;
-    private Integer datacenterId;
-    private Integer remoteId;
-    private String orderPeriod;
-    // operation system
-    private String ostempl;
-    // application
-    private String recipe;
-    private String autoprolong;
-    private Integer orderCount;
+    private String period;
 }
