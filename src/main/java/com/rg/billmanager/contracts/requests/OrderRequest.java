@@ -1,4 +1,4 @@
-package com.rg.billmanager.dto.order;
+package com.rg.billmanager.contracts.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,9 +1,9 @@
 package com.rg.billmanager.mapper;
 
 import com.rg.billmanager.dto.order.ItemStatusElem;
-import com.rg.billmanager.dto.order.OrderStatusResponse;
-import com.rg.billmanager.dto.template.DocumentResponse;
-import com.rg.billmanager.dto.template.ResponseDoc;
+import com.rg.billmanager.contracts.responses.OrderStatusResponse;
+import com.rg.billmanager.dto.DocumentResponse;
+import com.rg.billmanager.dto.ResponseDoc;
 import com.rg.billmanager.utility.OptionalUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

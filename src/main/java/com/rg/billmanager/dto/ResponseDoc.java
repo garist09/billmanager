@@ -1,9 +1,10 @@
-package com.rg.billmanager.dto.template;
+package com.rg.billmanager.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rg.billmanager.dto.order.OrderElem;
 import com.rg.billmanager.dto.order.cart.TotalElem;
+import com.rg.billmanager.dto.template.ValueProperty;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.dto.template.slist.SListItem;

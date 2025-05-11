@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.dto.template.AppTemplate;
-import com.rg.billmanager.dto.template.DocumentResponse;
-import com.rg.billmanager.dto.template.ResponseDoc;
-import com.rg.billmanager.dto.template.ServerInfoRequest;
-import com.rg.billmanager.dto.template.ServerInfoResponse;
-import com.rg.billmanager.dto.template.TemplatePlans;
+import com.rg.billmanager.dto.DocumentResponse;
+import com.rg.billmanager.dto.ResponseDoc;
+import com.rg.billmanager.contracts.requests.ServerInfoRequest;
+import com.rg.billmanager.contracts.responses.ServerInfoResponse;
+import com.rg.billmanager.contracts.responses.TemplatePlansResponse;
 import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.addons.Field;
 import com.rg.billmanager.dto.template.addons.FormMetadata;
@@ -70,7 +70,7 @@ public class TemplateServiceImpl implements TemplateService {
     private final ErrorUtility errorUtility;
     private final TemplateResponseMapper templateResponseMapper;
 
-    public TemplatePlans getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
+    public TemplatePlansResponse getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
             throws JsonProcessingException {
         String monthPeriodNumber = "1";
         String url = getUrlTemplatePrices(baseUrl, authData, externalId, monthPeriodNumber);
@@ -89,7 +89,7 @@ public class TemplateServiceImpl implements TemplateService {
                 .map(doc -> doc.getAutoprolong().getValue())
                 .orElse("");
 
-        return new TemplatePlans(groupedTemplates, fieldList, templatePeriodPricesMap, autoprolong);
+        return new TemplatePlansResponse(groupedTemplates, fieldList, templatePeriodPricesMap, autoprolong);
     }
 
     @Override

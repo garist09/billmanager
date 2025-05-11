@@ -1,4 +1,4 @@
-package com.rg.billmanager.dto.template;
+package com.rg.billmanager.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

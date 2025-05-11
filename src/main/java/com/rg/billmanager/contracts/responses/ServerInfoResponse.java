@@ -1,4 +1,4 @@
-package com.rg.billmanager.dto.template;
+package com.rg.billmanager.contracts.responses;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.rg.billmanager.dto.template.addons.Field;

@@ -1,6 +1,7 @@
-package com.rg.billmanager.dto.template;
+package com.rg.billmanager.contracts.responses;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.rg.billmanager.dto.template.OsTemplate;
 import com.rg.billmanager.dto.template.addons.Field;
 import com.rg.billmanager.dto.template.prices.TemplatePeriodPrices;
 import lombok.AllArgsConstructor;
@@ -16,9 +17,10 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TemplatePlans {
+public class TemplatePlansResponse {
     private Map<String, List<OsTemplate>> groupedTemplates;
     private List<Field> addons;
     private Map<String, TemplatePeriodPrices> templatePeriodPrices;
     private String autoprolong;
+
 }

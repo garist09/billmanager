@@ -1,9 +1,9 @@
 package com.rg.billmanager.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rg.billmanager.dto.order.ExtendOrderRequest;
-import com.rg.billmanager.dto.order.OrderRequest;
-import com.rg.billmanager.dto.order.OrderStatusResponse;
+import com.rg.billmanager.contracts.requests.ExtendOrderRequest;
+import com.rg.billmanager.contracts.requests.OrderRequest;
+import com.rg.billmanager.contracts.responses.OrderStatusResponse;
 import com.rg.billmanager.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

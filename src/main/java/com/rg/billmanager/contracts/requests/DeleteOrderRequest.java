@@ -1,4 +1,4 @@
-package com.rg.billmanager.dto.order;
+package com.rg.billmanager.contracts.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderStatusResponse {
-    private String remoteId;
-    private String orderStatusId;
-    private String orderStatus;
+public class DeleteOrderRequest {
+    private String baseUrl;
+    private String authData;
+    private Integer cartItemId;
 }
