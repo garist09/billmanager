@@ -18,13 +18,18 @@ public class ErrorUtility {
     public String parseJsonErrorMessage(String json) throws JsonProcessingException {
         JsonNode root = objectMapper.readTree(json);
 
+        String error = "";
+
         if (root.has("doc") && root.get("doc").has("error")) {
-            String error = root.get("doc").get("error").get("msg").get("$").asText() + ". Object: " +
+            error = root.get("doc").get("error").get("msg").get("$").asText() + ". Object: " +
                     root.get("doc").get("error").get("$object");
             logger.error(error);
-            return error;
+        } else if (root.has("doc") && root.get("doc").has("warning") &&
+                root.get("doc").get("warning").has("error")) {
+            error = root.get("doc").get("warning").get("error").get("msg").get("$").asText();
+            logger.error(error);
         }
 
-        return "";
+        return error;
     }
 }

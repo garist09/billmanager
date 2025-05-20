@@ -11,7 +11,8 @@ public enum FunctionName {
     CART("cart"),
     VDS("vds"),
     SERVICE_PROLONG("service.prolong"),
-    VDS_EDIT("vds.edit");
+    VDS_EDIT("vds.edit"),
+    SERVICE_REBOOT("service.reboot");
 
     private final String name;
 }

@@ -27,7 +27,7 @@ import com.rg.billmanager.dto.template.OsTemplate;
 import com.rg.billmanager.dto.template.list.ListItem;
 import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.enums.RequestType;
-import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
+import com.rg.billmanager.exception_handler.exception.InvalidCreationException;
 import com.rg.billmanager.mapper.TemplateResponseMapper;
 import com.rg.billmanager.service.TemplateService;
 import com.rg.billmanager.utility.ErrorUtility;
@@ -104,7 +104,7 @@ public class TemplateServiceImpl implements TemplateService {
         String error = errorUtility.parseJsonErrorMessage(response);
 
         if (!error.isEmpty()) {
-            throw new InvalidOrderException(error);
+            throw new InvalidCreationException(error);
         }
     }
 

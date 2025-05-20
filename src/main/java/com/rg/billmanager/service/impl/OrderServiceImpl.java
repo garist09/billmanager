@@ -14,7 +14,7 @@ import com.rg.billmanager.dto.order.cart.items.CartTotal;
 import com.rg.billmanager.dto.DocumentResponse;
 import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.enums.RequestType;
-import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
+import com.rg.billmanager.exception_handler.exception.InvalidCreationException;
 import com.rg.billmanager.mapper.CartResponseMapper;
 import com.rg.billmanager.mapper.OrderResponseMapper;
 import com.rg.billmanager.service.OrderService;
@@ -70,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
         String error = errorUtility.parseJsonErrorMessage(response);
 
         if (!error.isEmpty()) {
-            throw new InvalidOrderException(error);
+            throw new InvalidCreationException(error);
         }
 
         return getItemId(response);
@@ -103,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
         String error = errorUtility.parseJsonErrorMessage(response);
 
         if (!error.isEmpty()) {
-            throw new InvalidOrderException(error);
+            throw new InvalidCreationException(error);
         }
     }
 
@@ -152,12 +152,12 @@ public class OrderServiceImpl implements OrderService {
         String error = errorUtility.parseJsonErrorMessage(response);
 
         if (!error.isEmpty()) {
-            throw new InvalidOrderException(error);
+            throw new InvalidCreationException(error);
         }
     }
 
     private String getItemId(String json) throws JsonProcessingException {
-        JsonNode root = objectMapper.readTree(json);
+       JsonNode root = objectMapper.readTree(json);
         JsonNode lineItemIdNode = root.path("doc").path("item.id").path("$");
 
         return !lineItemIdNode.isMissingNode() ? lineItemIdNode.asText() : "";

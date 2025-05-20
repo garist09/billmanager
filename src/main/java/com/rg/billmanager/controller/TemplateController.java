@@ -34,7 +34,7 @@ public class TemplateController {
         templateService.updateServerInfo(updateServerInfoRequest);
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "Order created successfully",
+                "message", "Order updated successfully",
                 "orderId", updateServerInfoRequest.getId()
         ));
     }

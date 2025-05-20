@@ -8,5 +8,6 @@ public enum RequestType {
     UPDATE_SERVER_INFO,
     SERVER_INFO,
     TEMPLATE_PLAN,
-    PRICING_PLAN
+    PRICING_PLAN,
+    SERVER_ACTION
 }

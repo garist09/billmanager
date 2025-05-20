@@ -1,7 +1,7 @@
 package com.rg.billmanager.exception_handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rg.billmanager.exception_handler.exception.InvalidOrderException;
+import com.rg.billmanager.exception_handler.exception.InvalidCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,8 +25,8 @@ public class ControllerAdvisor {
         return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(InvalidOrderException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidOrderException(InvalidOrderException ex) {
+    @ExceptionHandler(InvalidCreationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrderException(InvalidCreationException ex) {
         logger.warn("Invalid order request: {}", ex.getMessage(), ex);
         List<String> errors = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.BAD_REQUEST);
