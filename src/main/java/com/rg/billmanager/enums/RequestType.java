@@ -9,5 +9,6 @@ public enum RequestType {
     SERVER_INFO,
     TEMPLATE_PLAN,
     PRICING_PLAN,
-    SERVER_ACTION
+    SERVER_ACTION,
+    TOKEN_GENERATION
 }

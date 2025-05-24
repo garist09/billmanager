@@ -13,4 +13,5 @@ public class JsonFields {
     public static final String RAM_FIELD_NAME = "Оперативная память";
     public static final String DISK_FIELD_NAME = "Дисковое пространство";
     public static final String NETWORK_SPEED_FIELD_NAME = "Входящий трафик";
+    public static final String TOKEN = "token";
 }
