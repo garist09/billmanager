@@ -1,6 +1,5 @@
 package com.rg.billmanager.contracts.requests;
 
-import com.rg.billmanager.enums.VmActionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,11 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServerActionRequest {
+public class TokenGenerationRequest {
     private String baseUrl;
-    private String authData;
-    private Integer id;
-    private String token;
-    private Boolean force;
-    private VmActionType functionType;
+    private String email;
+    private String password;
 }

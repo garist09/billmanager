@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum VmActionType {
-    SERVICE_REBOOT("service.reboot"),
-    SERVICE_STOP("service.stop"),
-    SERVICE_START("service.start");
+    SERVICE_RESTART("restart"),
+    SERVICE_STOP("stop"),
+    SERVICE_START("start");
 
     private final String name;
 }

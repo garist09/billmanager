@@ -3,6 +3,7 @@ package com.rg.billmanager.constants;
 public class UrlConstants {
     public static final String HTTPS = "https";
     public static final String BILLMGR = "/billmgr";
+    public static final String PUBLIC_TOKEN_URL = "/api/auth/v4/public/token";
     public static final String AUTH_INFO = "authinfo";
     public static final String FUNC = "func";
     public static final String OUT = "out";
@@ -20,4 +21,8 @@ public class UrlConstants {
     public static final String ELID = "elid";
     public static final String DOMAIN = "domain";
     public static final String REBOOT = "reboot";
+    public static final String EMAIL = "email";
+    public static final String PASSWORD = "password";
+    public static final String XSRF_TOKEN = "X-Xsrf-Token";
+    public static final String FORCE = "force";
 }

@@ -32,10 +32,10 @@ public class ControllerAdvisor {
         return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler({Exception.class, RuntimeException.class})
     public ResponseEntity<ErrorResponse> handleAllUnhandledExceptions(Exception ex) {
         logger.error("Unexpected server error: {}", ex.getMessage(), ex);
-        List<String> errors = List.of("Internal server error");
+        List<String> errors = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(LocalDateTime.now(), errors), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
