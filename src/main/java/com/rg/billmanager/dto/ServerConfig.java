@@ -14,6 +14,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Builder
 public class ServerConfig {
+    private String id;
     private String name;
     private String location;
     private String description;

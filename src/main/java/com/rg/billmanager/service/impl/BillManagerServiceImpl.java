@@ -147,6 +147,7 @@ public class BillManagerServiceImpl implements BillManagerService {
         for (JsonNode server : servers) {
             Integer externalId = server.path("id").path("$").asInt();
             ServerConfig serverConfig = parseServerConfigs(externalId, server, name);
+            serverConfig.setId(id.toString());
             serverConfigList.add(serverConfig);
         }
     }
