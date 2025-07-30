@@ -14,7 +14,7 @@ public class CreateOrderRequest {
     private String authData;
     private Integer externalId;
     private Integer datacenterId;
-    private Integer remoteId;
+    private String remoteId;
     private String orderPeriod;
     // operation system
     private String ostempl;

@@ -53,7 +53,7 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
         params.put(SOK, "ok");
         params.put(SKIP_BASKET, "on");
         if (request.getRemoteId() != null) {
-            params.put(REMOTE_ID, request.getRemoteId().toString());
+            params.put(REMOTE_ID, request.getRemoteId());
         }
         params.put(OUT, OutFormat.XJSON.getName());
         return params;
