@@ -61,13 +61,16 @@ public class TemplateResponseMapper {
         return Optional.ofNullable(documentResponse)
                 .map(DocumentResponse::getDoc)
                 .map(doc -> {
+                    if (doc.getId() == null) {
+                        return  null;
+                    }
                     String operationSystem = OptionalUtility.safeGet(doc.getOstempl());
                     String login = ROOT;
                     if (operationSystem.toLowerCase().contains(WINDOWS)) {
                         login = ADMINISTRATOR;
                     }
 
-                    String statusId = documentResponse.getDoc().getStatus().getValue();
+                    String statusId = doc.getStatus() != null ? doc.getStatus().getValue() : null;
                     String status = ItemStatus.getStatusNameById(statusId);
 
                     return ServerInfoResponse.builder()

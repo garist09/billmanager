@@ -124,7 +124,9 @@ public class TemplateServiceImpl implements TemplateService {
 
             ServerInfoResponse serverInfoResponse = templateResponseMapper
                     .mapDocumentResponseToServerInfoResponse(documentResponse, addons);
-            serverInfoResponseList.add(serverInfoResponse);
+            if (serverInfoResponse != null) {
+                serverInfoResponseList.add(serverInfoResponse);
+            }
         }
 
         return serverInfoResponseList;
