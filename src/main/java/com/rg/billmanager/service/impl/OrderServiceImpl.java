@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rg.billmanager.contracts.requests.CreateOrderRequest;
 import com.rg.billmanager.contracts.requests.DeleteOrderRequest;
 import com.rg.billmanager.contracts.requests.ExtendOrderRequest;
-import com.rg.billmanager.contracts.requests.OrderStatusRequest;
-import com.rg.billmanager.contracts.responses.OrderStatusResponse;
 import com.rg.billmanager.dto.order.cart.items.CartItem;
 import com.rg.billmanager.dto.order.cart.items.CartItemsResponse;
 import com.rg.billmanager.dto.order.cart.items.CartTotal;
@@ -16,7 +14,6 @@ import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.exception_handler.exception.InvalidCreationException;
 import com.rg.billmanager.mapper.CartResponseMapper;
-import com.rg.billmanager.mapper.OrderResponseMapper;
 import com.rg.billmanager.service.OrderService;
 import com.rg.billmanager.utility.ErrorUtility;
 import com.rg.billmanager.utility.UrlUtils;
@@ -50,7 +47,6 @@ public class OrderServiceImpl implements OrderService {
     private final ErrorUtility errorUtility;
     private final ObjectMapper objectMapper;
     private final CartResponseMapper cartResponseMapper;
-    private final OrderResponseMapper orderResponseMapper;
     private final ParamBuilderRegistry paramBuilderRegistry;
     private final UrlBuilderRegistry urlBuilderRegistry;
 
@@ -74,19 +70,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return getItemId(response);
-    }
-
-    @Override
-    public List<OrderStatusResponse> getOrderStatus(String baseUrl, String authData, List<String> remoteIds)
-            throws JsonProcessingException {
-        RequestUrlBuilder<OrderStatusRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.ORDER_STATUS);
-        OrderStatusRequest orderStatusRequest = new OrderStatusRequest(baseUrl, authData, remoteIds);
-        String url = urlBuilder.buildUrl(orderStatusRequest);
-
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-        DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
-
-        return orderResponseMapper.parseOrderStatuses(documentResponse, orderStatusRequest.getRemoteIds());
     }
 
     @Override

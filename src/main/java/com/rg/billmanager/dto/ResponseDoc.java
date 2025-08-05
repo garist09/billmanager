@@ -42,4 +42,5 @@ public class ResponseDoc {
     private ValueProperty reboot;
     private ValueProperty id;
     private ValueProperty domain;
+    private ValueProperty status;
 }

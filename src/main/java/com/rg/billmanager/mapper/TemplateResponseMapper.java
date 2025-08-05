@@ -10,6 +10,7 @@ import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.addons.Field;
 import com.rg.billmanager.dto.template.addons.FormMetadata;
 import com.rg.billmanager.dto.template.addons.Page;
+import com.rg.billmanager.enums.ItemStatus;
 import com.rg.billmanager.utility.OptionalUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +66,10 @@ public class TemplateResponseMapper {
                     if (operationSystem.toLowerCase().contains(WINDOWS)) {
                         login = ADMINISTRATOR;
                     }
+
+                    String statusId = documentResponse.getDoc().getStatus().getValue();
+                    String status = ItemStatus.getStatusNameById(statusId);
+
                     return ServerInfoResponse.builder()
                             .id(OptionalUtility.safeGet(doc.getId()))
                             .remoteId(OptionalUtility.safeGet(doc.getRemoteId()))
@@ -76,6 +81,8 @@ public class TemplateResponseMapper {
                             .expirationDate(OptionalUtility.safeGet(doc.getExpirationDate()))
                             .addons(addons)
                             .reboot(OptionalUtility.safeGet(doc.getReboot()))
+                            .status(status)
+                            .statusId(statusId)
                             .build();
                 }).orElse(null);
     }

@@ -26,5 +26,7 @@ public class ServerInfoResponse {
     private String reboot;
     private String id;
     private String hostname;
+    private String status;
+    private String statusId;
     private List<Field> addons;
 }

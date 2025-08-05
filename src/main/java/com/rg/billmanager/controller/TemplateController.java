@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -40,10 +41,10 @@ public class TemplateController {
     }
 
     @GetMapping(path = "/server-info")
-    public ResponseEntity<ServerInfoResponse> getServerInfo(@RequestParam String baseUrl,
+    public ResponseEntity<List<ServerInfoResponse>> getServerInfo(@RequestParam String baseUrl,
                                                             @RequestParam String authData,
-                                                            @RequestParam Integer orderId)
+                                                            @RequestParam List<Integer> orderIds)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, authData, orderId));
+        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, authData, orderIds));
     }
 }

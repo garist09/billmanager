@@ -109,17 +109,25 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
-    public ServerInfoResponse getServerInfo(String baseUrl, String authData, Integer orderId)
+    public List<ServerInfoResponse> getServerInfo(String baseUrl, String authData, List<Integer> orderIds)
             throws JsonProcessingException {
-        RequestUrlBuilder<ServerInfoRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.SERVER_INFO);
-        String url = urlBuilder.buildUrl(new ServerInfoRequest(baseUrl, authData, orderId));
+        List<ServerInfoResponse> serverInfoResponseList = new ArrayList<>();
 
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-        DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
+        for (Integer orderId: orderIds) {
+            RequestUrlBuilder<ServerInfoRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.SERVER_INFO);
+            String url = urlBuilder.buildUrl(new ServerInfoRequest(baseUrl, authData, orderId));
 
-        List<Field> addons = templateResponseMapper.parseAddons(response, documentResponse, Set.of(IPV4_ADDON_NAME));
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+            DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
 
-        return templateResponseMapper.mapDocumentResponseToServerInfoResponse(documentResponse, addons);
+            List<Field> addons = templateResponseMapper.parseAddons(response, documentResponse, Set.of(IPV4_ADDON_NAME));
+
+            ServerInfoResponse serverInfoResponse = templateResponseMapper
+                    .mapDocumentResponseToServerInfoResponse(documentResponse, addons);
+            serverInfoResponseList.add(serverInfoResponse);
+        }
+
+        return serverInfoResponseList;
     }
 
     private Map<String, List<OsTemplate>> getGroupedTemplates(DocumentResponse documentResponse) {
