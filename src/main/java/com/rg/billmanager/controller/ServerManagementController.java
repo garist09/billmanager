@@ -17,8 +17,7 @@ public class ServerManagementController {
     private final ServerManagementService serverManagementService;
 
     @PostMapping(path = "/server-action")
-    public ResponseEntity<?> restartServer(@RequestBody ServerActionRequest serverActionRequest)
-            throws IOException, InterruptedException {
+    public ResponseEntity<?> restartServer(@RequestBody ServerActionRequest serverActionRequest) throws IOException {
         serverManagementService.performServerAction(serverActionRequest);
 
         return ResponseEntity.ok(Map.of(

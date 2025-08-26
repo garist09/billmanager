@@ -13,7 +13,6 @@ import java.util.Map;
 @NoArgsConstructor
 public class UpdateServerInfoRequest {
     private String baseUrl;
-    private String authData;
     private String id;
     private String hostname;
     private String reboot;

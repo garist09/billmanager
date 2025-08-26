@@ -1,9 +1,11 @@
 package com.rg.billmanager.utility.requestbuilder.builders.param;
 
+import com.rg.billmanager.config.AuthProperties;
 import com.rg.billmanager.contracts.requests.ExtendOrderRequest;
 import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.utility.requestbuilder.interfaces.RequestParamBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -19,7 +21,9 @@ import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.SERVICE_PROLONG;
 
 @Component
+@RequiredArgsConstructor
 public class ExtendOrderParamBuilder implements RequestParamBuilder<ExtendOrderRequest> {
+    private final AuthProperties authProperties;
 
     @Override
     public RequestType getRequestType() {
@@ -29,7 +33,8 @@ public class ExtendOrderParamBuilder implements RequestParamBuilder<ExtendOrderR
     @Override
     public Map<String, String> buildParams(ExtendOrderRequest request) {
         Map<String, String> params = new HashMap<>();
-        params.put(AUTH_INFO, request.getAuthData());
+        String authData = authProperties.getAuthData(request.getBaseUrl());
+        params.put(AUTH_INFO, authData);
         params.put(ELID, request.getOrderId());
         params.put(PERIOD, request.getPeriod());
         params.put(FUNC, SERVICE_PROLONG.getName());

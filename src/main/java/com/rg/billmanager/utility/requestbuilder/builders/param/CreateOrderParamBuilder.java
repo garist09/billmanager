@@ -1,9 +1,11 @@
 package com.rg.billmanager.utility.requestbuilder.builders.param;
 
+import com.rg.billmanager.config.AuthProperties;
 import com.rg.billmanager.contracts.requests.CreateOrderRequest;
 import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.utility.requestbuilder.interfaces.RequestParamBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -25,7 +27,9 @@ import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
 
 @Component
+@RequiredArgsConstructor
 public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderRequest> {
+    private final AuthProperties authProperties;
 
     @Override
     public RequestType getRequestType() {
@@ -35,7 +39,8 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
     @Override
     public Map<String, String> buildParams(CreateOrderRequest request) {
         Map<String, String> params = new HashMap<>();
-        params.put(AUTH_INFO, request.getAuthData());
+        String authData = authProperties.getAuthData(request.getBaseUrl());
+        params.put(AUTH_INFO, authData);
         params.put(ORDER_PERIOD, request.getOrderPeriod());
         params.put(AUTOPROLONG, "off");
         if (request.getExternalId() != null) {

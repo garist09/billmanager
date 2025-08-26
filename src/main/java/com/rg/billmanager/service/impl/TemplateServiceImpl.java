@@ -3,6 +3,7 @@ package com.rg.billmanager.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rg.billmanager.config.AuthProperties;
 import com.rg.billmanager.contracts.requests.ServerInfoRequest;
 import com.rg.billmanager.contracts.requests.TemplatePlanRequest;
 import com.rg.billmanager.dto.template.AppTemplate;
@@ -62,11 +63,13 @@ public class TemplateServiceImpl implements TemplateService {
     private final TemplateResponseMapper templateResponseMapper;
     private final ParamBuilderRegistry paramBuilderRegistry;
     private final UrlBuilderRegistry urlBuilderRegistry;
+    private final AuthProperties authProperties;
 
-    public TemplatePlansResponse getTemplatesForPlans(String baseUrl, String authData, Integer externalId)
+    public TemplatePlansResponse getTemplatesForPlans(String baseUrl, Integer externalId)
             throws JsonProcessingException {
         RequestUrlBuilder<TemplatePlanRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.TEMPLATE_PLAN);
         String monthPeriodNumber = "1";
+        String authData = authProperties.getAuthData(baseUrl);
         TemplatePlanRequest templatePlanRequest = new TemplatePlanRequest(baseUrl, authData, externalId,
                monthPeriodNumber);
         String url = urlBuilder.buildUrl(templatePlanRequest);
@@ -109,9 +112,10 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
-    public List<ServerInfoResponse> getServerInfo(String baseUrl, String authData, List<Integer> orderIds)
+    public List<ServerInfoResponse> getServerInfo(String baseUrl, List<Integer> orderIds)
             throws JsonProcessingException {
         List<ServerInfoResponse> serverInfoResponseList = new ArrayList<>();
+        String authData = authProperties.getAuthData(baseUrl);
 
         for (Integer orderId: orderIds) {
             RequestUrlBuilder<ServerInfoRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.SERVER_INFO);

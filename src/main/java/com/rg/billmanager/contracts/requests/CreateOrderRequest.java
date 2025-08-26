@@ -11,7 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CreateOrderRequest {
     private String baseUrl;
-    private String authData;
     private Integer externalId;
     private Integer datacenterId;
     private String remoteId;

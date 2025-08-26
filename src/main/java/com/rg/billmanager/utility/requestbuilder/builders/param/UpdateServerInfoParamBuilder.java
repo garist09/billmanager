@@ -1,9 +1,11 @@
 package com.rg.billmanager.utility.requestbuilder.builders.param;
 
+import com.rg.billmanager.config.AuthProperties;
 import com.rg.billmanager.contracts.requests.UpdateServerInfoRequest;
 import com.rg.billmanager.enums.OutFormat;
 import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.utility.requestbuilder.interfaces.RequestParamBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -19,7 +21,10 @@ import static com.rg.billmanager.constants.UrlConstants.SOK;
 import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 
 @Component
+@RequiredArgsConstructor
 public class UpdateServerInfoParamBuilder implements RequestParamBuilder<UpdateServerInfoRequest> {
+    private final AuthProperties authProperties;
+
     @Override
     public RequestType getRequestType() {
         return RequestType.UPDATE_SERVER_INFO;
@@ -28,7 +33,8 @@ public class UpdateServerInfoParamBuilder implements RequestParamBuilder<UpdateS
     @Override
     public Map<String, String> buildParams(UpdateServerInfoRequest request) {
         Map<String, String> params = new HashMap<>();
-        params.put(AUTH_INFO, request.getAuthData());
+        String authData = authProperties.getAuthData(request.getBaseUrl());
+        params.put(AUTH_INFO, authData);
         params.put(ELID, request.getId());
         params.put(DOMAIN, request.getHostname());
         params.put(REBOOT, request.getReboot());

@@ -11,7 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ExtendOrderRequest {
     private String baseUrl;
-    private String authData;
     private String orderId;
     private String period;
 }

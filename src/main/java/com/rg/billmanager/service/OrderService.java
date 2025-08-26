@@ -6,8 +6,6 @@ import com.rg.billmanager.contracts.requests.DeleteOrderRequest;
 import com.rg.billmanager.contracts.requests.ExtendOrderRequest;
 import com.rg.billmanager.dto.order.cart.items.CartItemsResponse;
 
-import java.util.List;
-
 public interface OrderService {
     String createOrder(CreateOrderRequest createOrderRequest) throws JsonProcessingException;
     void extendService(ExtendOrderRequest extendOrderRequest) throws JsonProcessingException;

@@ -12,7 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ServerActionRequest {
     private String baseUrl;
-    private String authData;
     private Integer id;
     private String token;
     private Boolean force;

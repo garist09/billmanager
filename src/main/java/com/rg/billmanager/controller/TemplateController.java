@@ -23,10 +23,9 @@ public class TemplateController {
 
     @GetMapping(path = "/template-configuration")
     public ResponseEntity<TemplatePlansResponse> getOsTemplates(@RequestParam String baseUrl,
-                                                                @RequestParam String authData,
                                                                 @RequestParam Integer externalId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, authData, externalId));
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId));
     }
 
     @PostMapping(path = "/server-info")
@@ -42,9 +41,8 @@ public class TemplateController {
 
     @GetMapping(path = "/server-info")
     public ResponseEntity<List<ServerInfoResponse>> getServerInfo(@RequestParam String baseUrl,
-                                                            @RequestParam String authData,
-                                                            @RequestParam List<Integer> orderIds)
+                                                                  @RequestParam List<Integer> orderIds)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, authData, orderIds));
+        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, orderIds));
     }
 }
