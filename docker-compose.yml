@@ -6,3 +6,5 @@ services:
     ports:
       - "8090:8090"
     restart: unless-stopped
+    env_file:
+      - config/.env

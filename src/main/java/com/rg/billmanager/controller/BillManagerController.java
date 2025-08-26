@@ -19,10 +19,9 @@ public class BillManagerController {
 
     @GetMapping(path = "/pricing-plans")
     public ResponseEntity<Map<String, List<ServerConfig>>> getPricingPlans(@RequestParam String baseUrl,
-                                                                           @RequestParam String authData,
                                                                            @RequestParam(required = false)
                                                                            Integer datacenterId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, authData, datacenterId));
+        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, datacenterId));
     }
 }

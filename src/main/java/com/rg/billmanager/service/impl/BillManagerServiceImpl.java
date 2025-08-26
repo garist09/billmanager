@@ -4,12 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.rg.billmanager.config.AuthProperties;
 import com.rg.billmanager.contracts.requests.PricingPlanRequest;
 import com.rg.billmanager.dto.ServerConfig;
 import com.rg.billmanager.dto.ServerResources;
 import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.enums.RequestType;
+import com.rg.billmanager.exception_handler.exception.InvalidRequestException;
 import com.rg.billmanager.service.BillManagerService;
+import com.rg.billmanager.utility.ErrorUtility;
 import com.rg.billmanager.utility.requestbuilder.UrlBuilderRegistry;
 import com.rg.billmanager.utility.requestbuilder.interfaces.RequestUrlBuilder;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +35,14 @@ public class BillManagerServiceImpl implements BillManagerService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final UrlBuilderRegistry urlBuilderRegistry;
+    private final AuthProperties authProperties;
+    private final ErrorUtility errorUtility;
 
     @Override
-    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, String authData, Integer datacenterId)
+    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, Integer datacenterId)
             throws JsonProcessingException {
+        String authData = authProperties.getAuthData(baseUrl);
+
         JsonNode json = getPricingPlansJson(baseUrl, authData, datacenterId);
 
         List<Map<String, String>> datacenters = new ArrayList<>();
@@ -64,6 +71,12 @@ public class BillManagerServiceImpl implements BillManagerService {
         String url = urlBuilder.buildUrl(new PricingPlanRequest(baseUrl, authData, datacenterId));
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+
+        String error = errorUtility.parseJsonErrorMessage(response.getBody());
+        if (!error.isEmpty()) {
+            throw new InvalidRequestException(error);
+        }
+
         return objectMapper.readTree(response.getBody());
     }
 
@@ -112,9 +125,12 @@ public class BillManagerServiceImpl implements BillManagerService {
         String description = getJsonNodeValue(server, DESCRIPTION);
 
         Map<String, String> billingCycleMap = new HashMap<>();
-        JsonNode pricesNode = server.get(PRICES).get(PRICE);
         String currency = "€";
-        if (pricesNode != null && pricesNode.isArray()) {
+
+        if (server.get(PRICES) != null && server.get(PRICES).get(PRICE) != null &&
+                server.get(PRICES).get(PRICE).isArray()) {
+            JsonNode pricesNode = server.get(PRICES).get(PRICE);
+
             currency = pricesNode.get(0).get(CURRENCY).get("$").asText("€");
             for (JsonNode priceNode : pricesNode) {
                 JsonNode period = priceNode.get(PERIOD);
