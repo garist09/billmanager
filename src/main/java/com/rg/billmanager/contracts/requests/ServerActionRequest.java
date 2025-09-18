@@ -12,8 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ServerActionRequest {
     private String baseUrl;
-    private Integer id;
-    private String token;
-    private Boolean force;
+    private String id;
     private VmActionType functionType;
 }
