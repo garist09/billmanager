@@ -14,7 +14,7 @@ public class CreateOrderUrlBuilder implements RequestUrlBuilder<CreateOrderReque
     }
 
     @Override
-    public String buildUrl(CreateOrderRequest request) {
+    public String buildUrl(CreateOrderRequest request, String function) {
         return buildBasicUrl(request.getBaseUrl());
     }
 }

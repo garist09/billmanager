@@ -13,7 +13,7 @@ public class UpdateServerInfoUrlBuilder implements RequestUrlBuilder<UpdateServe
     }
 
     @Override
-    public String buildUrl(UpdateServerInfoRequest request) {
+    public String buildUrl(UpdateServerInfoRequest request, String function) {
         return buildBasicUrl(request.getBaseUrl());
     }
 }

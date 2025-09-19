@@ -8,7 +8,8 @@ import com.rg.billmanager.contracts.responses.TemplatePlansResponse;
 import java.util.List;
 
 public interface TemplateService {
-    TemplatePlansResponse getTemplatesForPlans(String baseUrl, Integer externalId) throws JsonProcessingException;
+    TemplatePlansResponse getTemplatesForPlans(String baseUrl, Integer externalId, String function)
+            throws JsonProcessingException;
     void updateServerInfo(UpdateServerInfoRequest updateServerInfoRequest) throws JsonProcessingException;
-    List<ServerInfoResponse> getServerInfo(String baseUrl, List<Integer> orderIds) throws JsonProcessingException;
+    List<ServerInfoResponse> getServerInfo(String baseUrl, List<Integer> orderIds, String function) throws JsonProcessingException;
 }

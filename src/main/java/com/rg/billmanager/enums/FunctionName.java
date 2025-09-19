@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum FunctionName {
     ORDER_PARAM("v2.vds.order.param"),
-    ORDER_PRICELIST("v2.vds.order.pricelist"),
+    VIRTUAL_PRIVATE_SERVERS_PRICELIST("v2.vds.order.pricelist"),
+    DEDICATED_SERVERS_PRICELIST("v2.dedic.order.pricelist"),
     CART("cart"),
     VDS("vds"),
     SERVICE_PROLONG("service.prolong"),

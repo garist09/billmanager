@@ -18,7 +18,7 @@ public class TokenGenerationUrlBuilder implements RequestUrlBuilder<TokenGenerat
     }
 
     @Override
-    public String buildUrl(TokenGenerationRequest request) {
+    public String buildUrl(TokenGenerationRequest request, String function) {
         return UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(request.getBaseUrl())

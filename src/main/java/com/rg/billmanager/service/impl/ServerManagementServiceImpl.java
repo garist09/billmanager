@@ -32,7 +32,7 @@ public class ServerManagementServiceImpl implements ServerManagementService {
         RequestParamBuilder<ServerActionRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.SERVER_ACTION);
 
-        String url = urlBuilder.buildUrl(serverActionRequest);
+        String url = urlBuilder.buildUrl(serverActionRequest, null);
         Map<String, String> params = paramBuilder.buildParams(serverActionRequest);
 
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);

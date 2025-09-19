@@ -12,16 +12,29 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+import static com.rg.billmanager.enums.FunctionName.DEDICATED_SERVERS_PRICELIST;
+import static com.rg.billmanager.enums.FunctionName.VIRTUAL_PRIVATE_SERVERS_PRICELIST;
+
 @RestController
 @AllArgsConstructor
 public class BillManagerController {
     private final BillManagerService billManagerService;
 
-    @GetMapping(path = "/pricing-plans")
-    public ResponseEntity<Map<String, List<ServerConfig>>> getPricingPlans(@RequestParam String baseUrl,
-                                                                           @RequestParam(required = false)
-                                                                           Integer datacenterId)
+    @GetMapping(path = "/vps/pricing-plans")
+    public ResponseEntity<Map<String, List<ServerConfig>>> getVirtualPrivateServersPricingPlans(@RequestParam String baseUrl,
+                                                                                                @RequestParam(required = false)
+                                                                                                Integer datacenterId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, datacenterId));
+        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, datacenterId,
+        VIRTUAL_PRIVATE_SERVERS_PRICELIST.getName()));
+    }
+
+    @GetMapping(path = "/ds/pricing-plans")
+    public ResponseEntity<Map<String, List<ServerConfig>>> getDedicatedServerPricingPlans(@RequestParam String baseUrl,
+                                                                                          @RequestParam(required = false)
+                                                                                          Integer datacenterId)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, datacenterId,
+        DEDICATED_SERVERS_PRICELIST.getName()));
     }
 }

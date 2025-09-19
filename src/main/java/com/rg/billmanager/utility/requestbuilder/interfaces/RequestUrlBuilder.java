@@ -8,7 +8,7 @@ import static com.rg.billmanager.constants.UrlConstants.HTTPS;
 
 public interface RequestUrlBuilder<T> {
     RequestType getRequestType();
-    String buildUrl(T request);
+    String buildUrl(T request, String function);
 
     default String buildBasicUrl(String baseUrl) {
         return UriComponentsBuilder.newInstance()

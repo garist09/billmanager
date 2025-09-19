@@ -14,7 +14,7 @@ public class ExtendOrderUrlBuilder implements RequestUrlBuilder<ExtendOrderReque
     }
 
     @Override
-    public String buildUrl(ExtendOrderRequest request) {
+    public String buildUrl(ExtendOrderRequest request, String function) {
         return buildBasicUrl(request.getBaseUrl());
     }
 }

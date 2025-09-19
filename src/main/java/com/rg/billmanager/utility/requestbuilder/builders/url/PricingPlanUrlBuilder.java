@@ -13,7 +13,6 @@ import static com.rg.billmanager.constants.UrlConstants.DATACENTER;
 import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.HTTPS;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
-import static com.rg.billmanager.enums.FunctionName.ORDER_PRICELIST;
 
 @Component
 public class PricingPlanUrlBuilder implements RequestUrlBuilder<PricingPlanRequest> {
@@ -23,13 +22,13 @@ public class PricingPlanUrlBuilder implements RequestUrlBuilder<PricingPlanReque
     }
 
     @Override
-    public String buildUrl(PricingPlanRequest request) {
+    public String buildUrl(PricingPlanRequest request, String function) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(request.getBaseUrl())
                 .path(BILLMGR)
                 .queryParam(AUTH_INFO, request.getAuthData())
-                .queryParam(FUNC, ORDER_PRICELIST.getName())
+                .queryParam(FUNC, function)
                 .queryParam(OUT, OutFormat.JSON.getName());
 
         if (request.getDatacenterId() != null) {

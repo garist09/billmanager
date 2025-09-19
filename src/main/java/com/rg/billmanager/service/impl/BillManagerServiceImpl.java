@@ -39,11 +39,11 @@ public class BillManagerServiceImpl implements BillManagerService {
     private final ErrorUtility errorUtility;
 
     @Override
-    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, Integer datacenterId)
+    public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, Integer datacenterId, String function)
             throws JsonProcessingException {
         String authData = authProperties.getAuthData(baseUrl);
 
-        JsonNode json = getPricingPlansJson(baseUrl, authData, datacenterId);
+        JsonNode json = getPricingPlansJson(baseUrl, authData, datacenterId, function);
 
         List<Map<String, String>> datacenters = new ArrayList<>();
         JsonNode valueNodes = json.path("doc").path("slist").get(0).path("val");
@@ -58,17 +58,17 @@ public class BillManagerServiceImpl implements BillManagerService {
         }
 
         for (Map<String, String> datacenter : datacenters) {
-            addServerConfig(baseUrl, authData, datacenter, serverConfigList);
+            addServerConfig(baseUrl, authData, datacenter, serverConfigList, function);
         }
 
         return serverConfigList.stream().collect(Collectors.groupingBy(ServerConfig::getLocation));
     }
 
-    private JsonNode getPricingPlansJson(String baseUrl, String authData, Integer datacenterId)
+    private JsonNode getPricingPlansJson(String baseUrl, String authData, Integer datacenterId, String function)
             throws JsonProcessingException {
         RequestUrlBuilder<PricingPlanRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.PRICING_PLAN);
 
-        String url = urlBuilder.buildUrl(new PricingPlanRequest(baseUrl, authData, datacenterId));
+        String url = urlBuilder.buildUrl(new PricingPlanRequest(baseUrl, authData, datacenterId), function);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 
@@ -154,11 +154,11 @@ public class BillManagerServiceImpl implements BillManagerService {
     }
 
     private void addServerConfig(String baseUrl, String authData, Map<String, String> datacenter,
-                                 List<ServerConfig> serverConfigList) throws JsonProcessingException {
+                                 List<ServerConfig> serverConfigList, String function) throws JsonProcessingException {
         Integer id = Integer.valueOf(datacenter.get("id"));
         String name = datacenter.get("name");
 
-        JsonNode json = getPricingPlansJson(baseUrl, authData, id);
+        JsonNode json = getPricingPlansJson(baseUrl, authData, id, function);
         JsonNode servers = json.path("doc").path("list").get(0).path("elem");
         for (JsonNode server : servers) {
             Integer externalId = server.path("id").path("$").asInt();

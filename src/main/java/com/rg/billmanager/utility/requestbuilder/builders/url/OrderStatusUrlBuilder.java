@@ -23,7 +23,7 @@ public class OrderStatusUrlBuilder implements RequestUrlBuilder<OrderStatusReque
     }
 
     @Override
-    public String buildUrl(OrderStatusRequest request) {
+    public String buildUrl(OrderStatusRequest request, String function) {
         return UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(request.getBaseUrl())

@@ -13,7 +13,6 @@ import static com.rg.billmanager.constants.UrlConstants.ELID;
 import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.HTTPS;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
-import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 
 @Component
 public class ServerInfoUrlBuilder implements RequestUrlBuilder<ServerInfoRequest> {
@@ -23,13 +22,13 @@ public class ServerInfoUrlBuilder implements RequestUrlBuilder<ServerInfoRequest
     }
 
     @Override
-    public String buildUrl(ServerInfoRequest request) {
+    public String buildUrl(ServerInfoRequest request, String function) {
         return UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(request.getBaseUrl())
                 .path(BILLMGR)
                 .queryParam(AUTH_INFO, request.getAuthData())
-                .queryParam(FUNC, VDS_EDIT.getName())
+                .queryParam(FUNC, function)
                 .queryParam(ELID, request.getOrderId())
                 .queryParam(OUT, OutFormat.XJSON.getName())
                 .build().toString();

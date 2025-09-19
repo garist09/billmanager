@@ -65,14 +65,14 @@ public class TemplateServiceImpl implements TemplateService {
     private final UrlBuilderRegistry urlBuilderRegistry;
     private final AuthProperties authProperties;
 
-    public TemplatePlansResponse getTemplatesForPlans(String baseUrl, Integer externalId)
+    public TemplatePlansResponse getTemplatesForPlans(String baseUrl, Integer externalId, String function)
             throws JsonProcessingException {
         RequestUrlBuilder<TemplatePlanRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.TEMPLATE_PLAN);
         String monthPeriodNumber = "1";
         String authData = authProperties.getAuthData(baseUrl);
         TemplatePlanRequest templatePlanRequest = new TemplatePlanRequest(baseUrl, authData, externalId,
                monthPeriodNumber);
-        String url = urlBuilder.buildUrl(templatePlanRequest);
+        String url = urlBuilder.buildUrl(templatePlanRequest, function);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -81,7 +81,8 @@ public class TemplateServiceImpl implements TemplateService {
 
         List<Field> fieldList = getAddons(response, documentResponse);
 
-        Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(urlBuilder, templatePlanRequest);
+        Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(urlBuilder,
+                templatePlanRequest, function);
 
         String autoprolong = Optional.ofNullable(documentResponse)
                 .map(DocumentResponse::getDoc)
@@ -98,7 +99,7 @@ public class TemplateServiceImpl implements TemplateService {
         RequestParamBuilder<UpdateServerInfoRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.UPDATE_SERVER_INFO);
 
-        String url = urlBuilder.buildUrl(updateServerInfoRequest);
+        String url = urlBuilder.buildUrl(updateServerInfoRequest, null);
         Map<String, String> params = paramBuilder.buildParams(updateServerInfoRequest);
 
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
@@ -112,14 +113,14 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
-    public List<ServerInfoResponse> getServerInfo(String baseUrl, List<Integer> orderIds)
+    public List<ServerInfoResponse> getServerInfo(String baseUrl, List<Integer> orderIds, String function)
             throws JsonProcessingException {
         List<ServerInfoResponse> serverInfoResponseList = new ArrayList<>();
         String authData = authProperties.getAuthData(baseUrl);
 
         for (Integer orderId: orderIds) {
             RequestUrlBuilder<ServerInfoRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.SERVER_INFO);
-            String url = urlBuilder.buildUrl(new ServerInfoRequest(baseUrl, authData, orderId));
+            String url = urlBuilder.buildUrl(new ServerInfoRequest(baseUrl, authData, orderId), function);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
             DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
@@ -183,7 +184,8 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     private Map<String, TemplatePeriodPrices> getAllTemplatesPrices(RequestUrlBuilder<TemplatePlanRequest> urlBuilder,
-                                                                    TemplatePlanRequest templatePlanRequest)
+                                                                    TemplatePlanRequest templatePlanRequest,
+                                                                    String function)
             throws JsonProcessingException {
         List<String> billingPeriods = List.of(BillingPeriod.DAILY.getCode(), BillingPeriod.MONTHLY.getCode(),
                 BillingPeriod.QUARTERLY.getCode(), BillingPeriod.SEMI_ANNUAL.getCode(), BillingPeriod.ANNUAL.getCode());
@@ -191,7 +193,7 @@ public class TemplateServiceImpl implements TemplateService {
 
         for (String billingPeriod : billingPeriods) {
             templatePlanRequest.setPeriod(billingPeriod);
-            templatePricesByPeriods.put(billingPeriod, getTemplatesPricesForPeriod(urlBuilder, templatePlanRequest));
+            templatePricesByPeriods.put(billingPeriod, getTemplatesPricesForPeriod(urlBuilder, templatePlanRequest, function));
         }
 
         return templatePricesByPeriods;
@@ -260,10 +262,11 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     private TemplatePeriodPrices getTemplatesPricesForPeriod(RequestUrlBuilder<TemplatePlanRequest> urlBuilder,
-                                                             TemplatePlanRequest templatePlanRequest)
+                                                             TemplatePlanRequest templatePlanRequest,
+                                                             String function)
             throws JsonProcessingException {
         Map<String, List<TemplatePrice>> periodPricesMap = new HashMap<>();
-        String url = urlBuilder.buildUrl(templatePlanRequest);
+        String url = urlBuilder.buildUrl(templatePlanRequest, function);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);

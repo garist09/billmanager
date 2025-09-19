@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
         RequestParamBuilder<CreateOrderRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.CREATE_ORDER);
 
-        String url = urlBuilder.buildUrl(createOrderRequest);
+        String url = urlBuilder.buildUrl(createOrderRequest, null);
 
         Map<String, String> params = paramBuilder.buildParams(createOrderRequest);
 
@@ -78,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
         RequestParamBuilder<ExtendOrderRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.EXTEND_ORDER);
 
-        String url = urlBuilder.buildUrl(extendOrderRequest);
+        String url = urlBuilder.buildUrl(extendOrderRequest, null);
         Map<String, String> params = paramBuilder.buildParams(extendOrderRequest);
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);

@@ -36,7 +36,7 @@ public class VmManagerServiceImpl implements VmManagerService {
         RequestUrlBuilder<TokenGenerationRequest> urlBuilder = urlBuilderRegistry
                 .getUrlBuilder(RequestType.TOKEN_GENERATION);
 
-        String newUrl = urlBuilder.buildUrl(tokenGenerationRequest);
+        String newUrl = urlBuilder.buildUrl(tokenGenerationRequest, null);
 
         Map<String, String> body = new HashMap<>();
         body.put(EMAIL, tokenGenerationRequest.getEmail());

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
+import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
+
 @RestController
 @AllArgsConstructor
 public class TemplateController {
@@ -25,7 +28,7 @@ public class TemplateController {
     public ResponseEntity<TemplatePlansResponse> getOsTemplates(@RequestParam String baseUrl,
                                                                 @RequestParam Integer externalId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId));
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId, ORDER_PARAM.getName()));
     }
 
     @PostMapping(path = "/server-info")
@@ -43,6 +46,6 @@ public class TemplateController {
     public ResponseEntity<List<ServerInfoResponse>> getServerInfo(@RequestParam String baseUrl,
                                                                   @RequestParam List<Integer> orderIds)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, orderIds));
+        return ResponseEntity.ok(templateService.getServerInfo(baseUrl, orderIds, VDS_EDIT.getName()));
     }
 }

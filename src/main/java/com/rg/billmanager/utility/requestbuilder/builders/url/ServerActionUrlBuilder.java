@@ -13,7 +13,7 @@ public class ServerActionUrlBuilder implements RequestUrlBuilder<ServerActionReq
     }
 
     @Override
-    public String buildUrl(ServerActionRequest request) {
+    public String buildUrl(ServerActionRequest request, String function) {
         return buildBasicUrl(request.getBaseUrl());
     }
 }

@@ -14,7 +14,6 @@ import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.HTTPS;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
 import static com.rg.billmanager.constants.UrlConstants.PRICELIST;
-import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
 
 @Component
 public class TemplatePlanBuilder implements RequestUrlBuilder<TemplatePlanRequest> {
@@ -24,13 +23,13 @@ public class TemplatePlanBuilder implements RequestUrlBuilder<TemplatePlanReques
     }
 
     @Override
-    public String buildUrl(TemplatePlanRequest request) {
+    public String buildUrl(TemplatePlanRequest request, String function) {
         return UriComponentsBuilder.newInstance()
                 .scheme(HTTPS)
                 .host(request.getBaseUrl())
                 .path(BILLMGR)
                 .queryParam(AUTH_INFO, request.getAuthData())
-                .queryParam(FUNC, ORDER_PARAM.getName())
+                .queryParam(FUNC, function)
                 .queryParam(PRICELIST, request.getExternalId())
                 .queryParam(PERIOD, request.getPeriod())
                 .queryParam(OUT, OutFormat.JSON.getName())
