@@ -16,19 +16,27 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
-import static com.rg.billmanager.enums.FunctionName.ORDER_PARAM;
+import static com.rg.billmanager.enums.FunctionName.DEDICATED_SERVERS_ORDER_PARAM;
 import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
+import static com.rg.billmanager.enums.FunctionName.VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM;
 
 @RestController
 @AllArgsConstructor
 public class TemplateController {
     private final TemplateService templateService;
 
-    @GetMapping(path = "/template-configuration")
-    public ResponseEntity<TemplatePlansResponse> getOsTemplates(@RequestParam String baseUrl,
-                                                                @RequestParam Integer externalId)
+    @GetMapping(path = "/vps/template-configuration")
+    public ResponseEntity<TemplatePlansResponse> getVirtualPrivateServersOsTemplates(@RequestParam String baseUrl,
+                                                                                        @RequestParam Integer externalId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId, ORDER_PARAM.getName()));
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId, VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM.getName()));
+    }
+
+    @GetMapping(path = "/ds/template-configuration")
+    public ResponseEntity<TemplatePlansResponse> getDedicatedServersOsTemplates(@RequestParam String baseUrl,
+                                                                                @RequestParam Integer externalId)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId, DEDICATED_SERVERS_ORDER_PARAM.getName()));
     }
 
     @PostMapping(path = "/server-info")
