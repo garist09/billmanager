@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.rg.billmanager.enums.FunctionName.DEDICATED_SERVERS_PRICELIST;
+import static com.rg.billmanager.enums.FunctionName.SERVER_AUCTION_PRICELIST;
 import static com.rg.billmanager.enums.FunctionName.VIRTUAL_PRIVATE_SERVERS_PRICELIST;
 
 @RestController
@@ -36,5 +37,14 @@ public class BillManagerController {
             throws JsonProcessingException {
         return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, datacenterId,
         DEDICATED_SERVERS_PRICELIST.getName()));
+    }
+
+    @GetMapping(path = "/auction/pricing-plans")
+    public ResponseEntity<Map<String, List<ServerConfig>>> getServerAuctionPricingPlans(@RequestParam String baseUrl,
+                                                                                        @RequestParam(required = false)
+                                                                                        Integer datacenterId)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(billManagerService.getPricingPlans(baseUrl, datacenterId,
+                SERVER_AUCTION_PRICELIST.getName()));
     }
 }
