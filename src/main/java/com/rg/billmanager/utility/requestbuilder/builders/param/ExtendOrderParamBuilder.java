@@ -18,7 +18,6 @@ import static com.rg.billmanager.constants.UrlConstants.OUT;
 import static com.rg.billmanager.constants.UrlConstants.PERIOD;
 import static com.rg.billmanager.constants.UrlConstants.SKIP_BASKET;
 import static com.rg.billmanager.constants.UrlConstants.SOK;
-import static com.rg.billmanager.enums.FunctionName.SERVICE_PROLONG;
 
 @Component
 @RequiredArgsConstructor
@@ -31,13 +30,13 @@ public class ExtendOrderParamBuilder implements RequestParamBuilder<ExtendOrderR
     }
 
     @Override
-    public Map<String, String> buildParams(ExtendOrderRequest request) {
+    public Map<String, String> buildParams(ExtendOrderRequest request, String function) {
         Map<String, String> params = new HashMap<>();
         String authData = authProperties.getAuthData(request.getBaseUrl());
         params.put(AUTH_INFO, authData);
         params.put(ELID, request.getOrderId());
         params.put(PERIOD, request.getPeriod());
-        params.put(FUNC, SERVICE_PROLONG.getName());
+        params.put(FUNC, function);
         params.put(SOK, "ok");
         params.put(SKIP_BASKET, "on");
         params.put(OUT, OutFormat.XJSON.getName());

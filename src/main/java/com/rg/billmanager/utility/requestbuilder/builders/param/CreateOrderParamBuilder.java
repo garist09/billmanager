@@ -24,7 +24,6 @@ import static com.rg.billmanager.constants.UrlConstants.RECIPE;
 import static com.rg.billmanager.constants.UrlConstants.REMOTE_ID;
 import static com.rg.billmanager.constants.UrlConstants.SKIP_BASKET;
 import static com.rg.billmanager.constants.UrlConstants.SOK;
-import static com.rg.billmanager.enums.FunctionName.VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM;
 
 @Component
 @RequiredArgsConstructor
@@ -37,7 +36,7 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
     }
 
     @Override
-    public Map<String, String> buildParams(CreateOrderRequest request) {
+    public Map<String, String> buildParams(CreateOrderRequest request, String function) {
         Map<String, String> params = new HashMap<>();
         String authData = authProperties.getAuthData(request.getBaseUrl());
         params.put(AUTH_INFO, authData);
@@ -54,7 +53,7 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
         if (request.getOrderCount() != null) {
             params.put(ORDER_COUNT, request.getOrderCount().toString());
         }
-        params.put(FUNC, VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM.getName());
+        params.put(FUNC, function);
         params.put(SOK, "ok");
         params.put(SKIP_BASKET, "on");
         if (request.getRemoteId() != null) {

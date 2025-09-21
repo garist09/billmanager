@@ -18,7 +18,6 @@ import static com.rg.billmanager.constants.UrlConstants.FUNC;
 import static com.rg.billmanager.constants.UrlConstants.OUT;
 import static com.rg.billmanager.constants.UrlConstants.REBOOT;
 import static com.rg.billmanager.constants.UrlConstants.SOK;
-import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 
 @Component
 @RequiredArgsConstructor
@@ -31,14 +30,14 @@ public class UpdateServerInfoParamBuilder implements RequestParamBuilder<UpdateS
     }
 
     @Override
-    public Map<String, String> buildParams(UpdateServerInfoRequest request) {
+    public Map<String, String> buildParams(UpdateServerInfoRequest request, String function) {
         Map<String, String> params = new HashMap<>();
         String authData = authProperties.getAuthData(request.getBaseUrl());
         params.put(AUTH_INFO, authData);
         params.put(ELID, request.getId());
         params.put(DOMAIN, request.getHostname());
         params.put(REBOOT, request.getReboot());
-        params.put(FUNC, VDS_EDIT.getName());
+        params.put(FUNC, function);
         request.getAddons().entrySet().forEach(entry -> params.put(entry.getKey(), entry.getValue()));
         params.put(SOK, "ok");
         params.put(OUT, OutFormat.XJSON.getName());

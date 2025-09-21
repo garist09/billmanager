@@ -33,7 +33,8 @@ public class ServerManagementServiceImpl implements ServerManagementService {
                 .getParamBuilder(RequestType.SERVER_ACTION);
 
         String url = urlBuilder.buildUrl(serverActionRequest, null);
-        Map<String, String> params = paramBuilder.buildParams(serverActionRequest);
+        Map<String, String> params = paramBuilder.buildParams(serverActionRequest,
+                serverActionRequest.getFunctionType().getName());
 
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);

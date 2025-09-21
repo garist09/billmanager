@@ -51,14 +51,14 @@ public class OrderServiceImpl implements OrderService {
     private final UrlBuilderRegistry urlBuilderRegistry;
 
     @Override
-    public String createOrder(CreateOrderRequest createOrderRequest) throws JsonProcessingException {
+    public String createOrder(CreateOrderRequest createOrderRequest, String function) throws JsonProcessingException {
         RequestUrlBuilder<CreateOrderRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.CREATE_ORDER);
         RequestParamBuilder<CreateOrderRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.CREATE_ORDER);
 
         String url = urlBuilder.buildUrl(createOrderRequest, null);
 
-        Map<String, String> params = paramBuilder.buildParams(createOrderRequest);
+        Map<String, String> params = paramBuilder.buildParams(createOrderRequest, function);
 
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
@@ -73,13 +73,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void extendService(ExtendOrderRequest extendOrderRequest) throws JsonProcessingException {
+    public void extendService(ExtendOrderRequest extendOrderRequest, String function) throws JsonProcessingException {
         RequestUrlBuilder<ExtendOrderRequest> urlBuilder = urlBuilderRegistry.getUrlBuilder(RequestType.EXTEND_ORDER);
         RequestParamBuilder<ExtendOrderRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.EXTEND_ORDER);
 
         String url = urlBuilder.buildUrl(extendOrderRequest, null);
-        Map<String, String> params = paramBuilder.buildParams(extendOrderRequest);
+        Map<String, String> params = paramBuilder.buildParams(extendOrderRequest, function);
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
 

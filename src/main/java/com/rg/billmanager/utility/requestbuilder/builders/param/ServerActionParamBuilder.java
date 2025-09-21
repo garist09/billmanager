@@ -29,12 +29,12 @@ public class ServerActionParamBuilder implements RequestParamBuilder<ServerActio
     }
 
     @Override
-    public Map<String, String> buildParams(ServerActionRequest request) {
+    public Map<String, String> buildParams(ServerActionRequest request, String function) {
         Map<String, String> params = new HashMap<>();
         String authData = authProperties.getAuthData(request.getBaseUrl());
         params.put(AUTH_INFO, authData);
         params.put(ELID, request.getId());
-        params.put(FUNC, request.getFunctionType().getName());
+        params.put(FUNC, function);
         params.put(SOK, "ok");
         params.put(SKIP_BASKET, "on");
         params.put(OUT, OutFormat.XJSON.getName());
