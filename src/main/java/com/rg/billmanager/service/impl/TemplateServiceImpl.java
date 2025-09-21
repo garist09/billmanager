@@ -16,6 +16,8 @@ import com.rg.billmanager.dto.template.addons.AddonMetadata;
 import com.rg.billmanager.dto.template.addons.Field;
 import com.rg.billmanager.dto.template.addons.FormMetadata;
 import com.rg.billmanager.dto.template.addons.Page;
+import com.rg.billmanager.dto.template.addons.SelectValue;
+import com.rg.billmanager.dto.template.addons.field_type.Select;
 import com.rg.billmanager.dto.template.prices.TemplatePeriodPrices;
 import com.rg.billmanager.dto.template.prices.TemplatePrice;
 import com.rg.billmanager.dto.template.ValueProperty;
@@ -48,8 +50,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,9 +83,8 @@ public class TemplateServiceImpl implements TemplateService {
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
         DocumentResponse documentResponse = objectMapper.readValue(response.getBody(), DocumentResponse.class);
 
-        Map<String, List<OsTemplate>> groupedTemplates = getGroupedTemplates(documentResponse);
-
         List<Field> fieldList = getAddons(response, documentResponse);
+        Map<String, List<OsTemplate>> groupedTemplatesMap = fillTemplateConfiguration(documentResponse, fieldList);
 
         Map<String, TemplatePeriodPrices> templatePeriodPricesMap = getAllTemplatesPrices(urlBuilder,
                 templatePlanRequest, function);
@@ -89,18 +94,18 @@ public class TemplateServiceImpl implements TemplateService {
                 .map(doc -> doc.getAutoprolong().getValue())
                 .orElse("");
 
-        return new TemplatePlansResponse(groupedTemplates, fieldList, templatePeriodPricesMap, autoprolong);
+        return new TemplatePlansResponse(groupedTemplatesMap, fieldList, templatePeriodPricesMap, autoprolong);
     }
 
     @Override
-    public void updateServerInfo(UpdateServerInfoRequest updateServerInfoRequest) throws JsonProcessingException {
+    public void updateServerInfo(UpdateServerInfoRequest updateServerInfoRequest, String function) throws JsonProcessingException {
         RequestUrlBuilder<UpdateServerInfoRequest> urlBuilder = urlBuilderRegistry
                 .getUrlBuilder(RequestType.UPDATE_SERVER_INFO);
         RequestParamBuilder<UpdateServerInfoRequest> paramBuilder = paramBuilderRegistry
                 .getParamBuilder(RequestType.UPDATE_SERVER_INFO);
 
         String url = urlBuilder.buildUrl(updateServerInfoRequest, null);
-        Map<String, String> params = paramBuilder.buildParams(updateServerInfoRequest);
+        Map<String, String> params = paramBuilder.buildParams(updateServerInfoRequest, function);
 
         HttpEntity<String> request = UrlUtils.buildFormUrlEncodedEntity(params);
         String response = restTemplate.postForObject(url, request, String.class);
@@ -137,22 +142,27 @@ public class TemplateServiceImpl implements TemplateService {
         return serverInfoResponseList;
     }
 
-    private Map<String, List<OsTemplate>> getGroupedTemplates(DocumentResponse documentResponse) {
+    private Map<String, List<OsTemplate>> fillTemplateConfiguration(DocumentResponse documentResponse,
+                                                                    List<Field> fieldList) {
+        Map<String, List<OsTemplate>> groupedTemplatesMap = new HashMap<>();
         Map<String, Object> templates = new HashMap<>();
         List<OsTemplate> osTemplateList = new ArrayList<>();
-        Map<String, List<OsTemplate>> groupedTemplatesMap = new HashMap<>();
-
         List<SListItem> sListItems = Optional.ofNullable(documentResponse)
                 .map(DocumentResponse::getDoc)
                 .map(ResponseDoc::getSlist)
                 .orElse(new ArrayList<>());
+        Map<String, Select> selectMap = getSelectMap(fieldList);
 
         for (SListItem sListItem : sListItems) {
-            if (sListItem.getName().equals("ostempl")) {
+            String itemName = sListItem.getName();
+            if (itemName.equals("ostempl")) {
                 groupedTemplatesMap = getOperationSystems(templates, osTemplateList, sListItem);
             }
-            if (sListItem.getName().equals("recipe")) {
+            if (itemName.equals("recipe")) {
                 addApplicationToOperationSystems(templates, groupedTemplatesMap, sListItem);
+            }
+            if (selectMap.containsKey(itemName)) {
+                fillSelectValues(selectMap.get(itemName), sListItem);
             }
         }
 
@@ -227,6 +237,47 @@ public class TemplateServiceImpl implements TemplateService {
                 }
                 templates.putIfAbsent(osId, appTemplate);
             }
+        }
+    }
+
+    private Map<String, Select> getSelectMap(List<Field> fieldList) {
+        List<Select> selects = fieldList.stream()
+                .filter(field -> field.getSelects() != null)
+                .flatMap(field -> field.getSelects().stream())
+                .toList();
+
+        return selects.stream()
+                .filter(Objects::nonNull)
+                .filter(select -> select.getName() != null)
+                .collect(Collectors.toMap(Select::getName, Function.identity()));
+    }
+
+    private void fillSelectValues(Select select, SListItem sListItem) {
+        List<SelectValue> selectValues = new ArrayList<>();
+        for (Map<String, Object> values : sListItem.getVal()) {
+            SelectValue selectValue = parseSelectValue(values);
+            selectValues.add(selectValue);
+        }
+        select.setSelectValues(selectValues);
+    }
+
+    private SelectValue parseSelectValue(Map<String, Object> values) {
+        String key = (String) values.getOrDefault("$key", "");
+        String description =  (String) values.getOrDefault("$", "");
+
+        if (description == null || description.trim().isEmpty()) {
+            return new SelectValue(key, "Invalid input", "N/A");
+        }
+
+        // Pattern to match: description (price)
+        Pattern pattern = Pattern.compile("(.+?)\\s+\\(([^)]+)\\)\\s*$");
+        Matcher matcher = pattern.matcher(description);
+
+        if (matcher.find()) {
+            String price = matcher.group(2).trim();
+            return new SelectValue(key, description, price);
+        } else {
+            return new SelectValue(key, description, "Price not specified");
         }
     }
 

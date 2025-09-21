@@ -10,6 +10,6 @@ import java.util.List;
 public interface TemplateService {
     TemplatePlansResponse getTemplatesForPlans(String baseUrl, Integer externalId, String function)
             throws JsonProcessingException;
-    void updateServerInfo(UpdateServerInfoRequest updateServerInfoRequest) throws JsonProcessingException;
+    void updateServerInfo(UpdateServerInfoRequest updateServerInfoRequest, String function) throws JsonProcessingException;
     List<ServerInfoResponse> getServerInfo(String baseUrl, List<Integer> orderIds, String function) throws JsonProcessingException;
 }

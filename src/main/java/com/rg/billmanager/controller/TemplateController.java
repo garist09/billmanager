@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.rg.billmanager.enums.FunctionName.DEDICATED_SERVERS_ORDER_PARAM;
+import static com.rg.billmanager.enums.FunctionName.SERVER_AUCTION_ORDER_PARAM;
 import static com.rg.billmanager.enums.FunctionName.VDS_EDIT;
 import static com.rg.billmanager.enums.FunctionName.VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM;
 
@@ -27,22 +28,32 @@ public class TemplateController {
 
     @GetMapping(path = "/vps/template-configuration")
     public ResponseEntity<TemplatePlansResponse> getVirtualPrivateServersOsTemplates(@RequestParam String baseUrl,
-                                                                                        @RequestParam Integer externalId)
+                                                                                     @RequestParam Integer externalId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId, VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM.getName()));
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId,
+         VIRTUAL_PRIVATE_SERVERS_ORDER_PARAM.getName()));
     }
 
     @GetMapping(path = "/ds/template-configuration")
     public ResponseEntity<TemplatePlansResponse> getDedicatedServersOsTemplates(@RequestParam String baseUrl,
                                                                                 @RequestParam Integer externalId)
             throws JsonProcessingException {
-        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId, DEDICATED_SERVERS_ORDER_PARAM.getName()));
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId,
+         DEDICATED_SERVERS_ORDER_PARAM.getName()));
+    }
+
+    @GetMapping(path = "/auction/template-configuration")
+    public ResponseEntity<TemplatePlansResponse> getServerAuctionOsTemplates(@RequestParam String baseUrl,
+                                                                             @RequestParam Integer externalId)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(templateService.getTemplatesForPlans(baseUrl, externalId,
+         SERVER_AUCTION_ORDER_PARAM.getName()));
     }
 
     @PostMapping(path = "/server-info")
     public ResponseEntity<?> updateServerInfo(@RequestBody UpdateServerInfoRequest updateServerInfoRequest)
             throws JsonProcessingException {
-        templateService.updateServerInfo(updateServerInfoRequest);
+        templateService.updateServerInfo(updateServerInfoRequest, VDS_EDIT.getName());
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Order updated successfully",
