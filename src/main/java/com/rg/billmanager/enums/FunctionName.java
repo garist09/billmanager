@@ -15,7 +15,9 @@ public enum FunctionName {
     CART("cart"),
     VDS("vds"),
     SERVICE_PROLONG("service.prolong"),
-    VDS_EDIT("vds.edit"),
+    VIRTUAL_PRIVATE_SERVER_EDIT("vds.edit"),
+    DEDICATED_SERVER_EDIT("dedic.edit"),
+    SERVER_AUCTION_EDIT("not-install.edit"),
     SERVICE_REBOOT("service.reboot");
 
     private final String name;
