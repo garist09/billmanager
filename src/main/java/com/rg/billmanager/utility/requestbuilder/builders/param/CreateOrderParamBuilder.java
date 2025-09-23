@@ -41,7 +41,7 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
         String authData = authProperties.getAuthData(request.getBaseUrl());
         params.put(AUTH_INFO, authData);
         params.put(ORDER_PERIOD, request.getOrderPeriod());
-        params.put(AUTOPROLONG, "off");
+        params.put(AUTOPROLONG, request.getAutoprolong());
         if (request.getExternalId() != null) {
             params.put(PRICELIST, request.getExternalId().toString());
         }
@@ -49,7 +49,9 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
             params.put(DATACENTER, request.getDatacenterId().toString());
         }
         params.put(OSTEMPL, request.getOstempl());
-        params.put(RECIPE, request.getRecipe());
+        if (request.getRecipe() != null) {
+            params.put(RECIPE, request.getRecipe());
+        }
         if (request.getOrderCount() != null) {
             params.put(ORDER_COUNT, request.getOrderCount().toString());
         }
@@ -58,6 +60,9 @@ public class CreateOrderParamBuilder implements RequestParamBuilder<CreateOrderR
         params.put(SKIP_BASKET, "on");
         if (request.getRemoteId() != null) {
             params.put(REMOTE_ID, request.getRemoteId());
+        }
+        if (request.getAddons() != null) {
+            params.putAll(request.getAddons());
         }
         params.put(OUT, OutFormat.XJSON.getName());
         return params;
