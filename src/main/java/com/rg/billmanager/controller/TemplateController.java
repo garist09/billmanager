@@ -52,10 +52,32 @@ public class TemplateController {
          SERVER_AUCTION_ORDER_PARAM.getName()));
     }
 
-    @PostMapping(path = "/server-info")
-    public ResponseEntity<?> updateServerInfo(@RequestBody UpdateServerInfoRequest updateServerInfoRequest)
+    @PostMapping(path = "/vps/server-info")
+    public ResponseEntity<?> updateVirtualPrivateServerInfo(@RequestBody UpdateServerInfoRequest updateServerInfoRequest)
             throws JsonProcessingException {
         templateService.updateServerInfo(updateServerInfoRequest, VIRTUAL_PRIVATE_SERVER_EDIT.getName());
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Order updated successfully",
+                "orderId", updateServerInfoRequest.getId()
+        ));
+    }
+
+    @PostMapping(path = "/ds/server-info")
+    public ResponseEntity<?> updateDedicatedServerInfo(@RequestBody UpdateServerInfoRequest updateServerInfoRequest)
+            throws JsonProcessingException {
+        templateService.updateServerInfo(updateServerInfoRequest, DEDICATED_SERVER_EDIT.getName());
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Order updated successfully",
+                "orderId", updateServerInfoRequest.getId()
+        ));
+    }
+
+    @PostMapping(path = "/auction/server-info")
+    public ResponseEntity<?> updateAuctionServerInfo(@RequestBody UpdateServerInfoRequest updateServerInfoRequest)
+            throws JsonProcessingException {
+        templateService.updateServerInfo(updateServerInfoRequest, SERVER_AUCTION_EDIT.getName());
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Order updated successfully",
