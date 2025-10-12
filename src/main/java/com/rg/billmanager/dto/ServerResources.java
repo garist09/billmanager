@@ -14,11 +14,11 @@ import lombok.Setter;
 public class ServerResources {
     private String processorName;
     private String ramType;
-    private String cores;
-    private String ram;
+    private Integer cores;
+    private Integer ram;
     private String diskType;
-    private String disk;
+    private Integer disk;
     private String coreFrequency;
-    private String networkLimit;
-    private String networkSpeed;
+    private Double traffic;
+    private Integer networkSpeed;
 }

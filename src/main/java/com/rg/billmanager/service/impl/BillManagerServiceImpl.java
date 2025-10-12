@@ -3,16 +3,14 @@ package com.rg.billmanager.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.NullNode;
 import com.rg.billmanager.config.AuthProperties;
 import com.rg.billmanager.contracts.requests.PricingPlanRequest;
 import com.rg.billmanager.dto.ServerConfig;
-import com.rg.billmanager.dto.ServerResources;
-import com.rg.billmanager.enums.BillingPeriod;
 import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.exception_handler.exception.InvalidRequestException;
 import com.rg.billmanager.service.BillManagerService;
 import com.rg.billmanager.utility.ErrorUtility;
+import com.rg.billmanager.utility.parser.BillManagerParser;
 import com.rg.billmanager.utility.requestbuilder.UrlBuilderRegistry;
 import com.rg.billmanager.utility.requestbuilder.interfaces.RequestUrlBuilder;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.rg.billmanager.constants.JsonFields.*;
-
 @Service
 @RequiredArgsConstructor
 public class BillManagerServiceImpl implements BillManagerService {
@@ -37,6 +33,7 @@ public class BillManagerServiceImpl implements BillManagerService {
     private final UrlBuilderRegistry urlBuilderRegistry;
     private final AuthProperties authProperties;
     private final ErrorUtility errorUtility;
+    private final BillManagerParser billManagerParser;
 
     @Override
     public Map<String, List<ServerConfig>> getPricingPlans(String baseUrl, Integer datacenterId, String function)
@@ -58,7 +55,10 @@ public class BillManagerServiceImpl implements BillManagerService {
         }
 
         for (Map<String, String> datacenter : datacenters) {
-            addServerConfig(baseUrl, authData, datacenter, serverConfigList, function);
+            Integer id = Integer.valueOf(datacenter.get("id"));
+
+            JsonNode jsonNode = getPricingPlansJson(baseUrl, authData, id, function);
+            billManagerParser.parseServerConfigs(jsonNode, datacenter, serverConfigList, id);
         }
 
         return serverConfigList.stream().collect(Collectors.groupingBy(ServerConfig::getLocation));
@@ -91,101 +91,5 @@ public class BillManagerServiceImpl implements BillManagerService {
             dc.put("name", value);
             datacenters.add(dc);
         }
-    }
-
-    String getDetailValue(JsonNode detailArray, String keyName) {
-        if (detailArray.isArray()) {
-            for (JsonNode item : detailArray) {
-                String name = item.path("name").path("$").asText("");
-                if (name.equalsIgnoreCase(keyName)) {
-                    return item.path("value").path("$").asText("");
-                }
-            }
-        }
-
-        return "";
-    }
-
-    String getJsonNodeValue(JsonNode server, String keyName) {
-        String value = "";
-        if (server.has(keyName)) {
-            JsonNode node = server.get(keyName);
-            if (node.has("$")) {
-                value = node.get("$").asText();
-            }
-        }
-
-        return value;
-    }
-
-    private ServerConfig parseServerConfigs(Integer externalId, JsonNode server,
-                                            String datacenterName) {
-        ServerResources serverResources = createServerResources(server);
-        String name = getJsonNodeValue(server, TITLE);
-        String description = getJsonNodeValue(server, DESCRIPTION);
-
-        Map<String, String> billingCycleMap = new HashMap<>();
-        String currency = "€";
-
-        if (server.get(PRICES) != null && server.get(PRICES).get(PRICE) != null &&
-                server.get(PRICES).get(PRICE).isArray()) {
-            JsonNode pricesNode = server.get(PRICES).get(PRICE);
-
-            currency = pricesNode.get(0).get(CURRENCY).get("$").asText("€");
-            for (JsonNode priceNode : pricesNode) {
-                JsonNode period = priceNode.get(PERIOD);
-                JsonNode cost = priceNode.get(COST);
-                String billingCycle = BillingPeriod.getLabelByCode(period.path("$").asText(""));
-                String billingCost = cost.path("$").asText("");
-                billingCycleMap.put(billingCycle, billingCost);
-            }
-        }
-
-        return ServerConfig.builder()
-                .name(name)
-                .description(description)
-                .prices(billingCycleMap)
-                .currency(currency)
-                .serverType("virtual")
-                .externalId(externalId)
-                .location(datacenterName)
-                .serverResources(serverResources)
-                .build();
-    }
-
-    private void addServerConfig(String baseUrl, String authData, Map<String, String> datacenter,
-                                 List<ServerConfig> serverConfigList, String function) throws JsonProcessingException {
-        Integer id = Integer.valueOf(datacenter.get("id"));
-        String name = datacenter.get("name");
-
-        JsonNode json = getPricingPlansJson(baseUrl, authData, id, function);
-        JsonNode servers = json.path("doc").path("list").get(0).path("elem");
-        for (JsonNode server : servers) {
-            Integer externalId = server.path("id").path("$").asInt();
-            ServerConfig serverConfig = parseServerConfigs(externalId, server, name);
-            serverConfig.setId(id.toString());
-            serverConfigList.add(serverConfig);
-        }
-    }
-
-    private ServerResources createServerResources(JsonNode server) {
-        JsonNode detail = server.has(DETAIL) ? server.get(DETAIL) : NullNode.getInstance();
-
-        String cores = getDetailValue(detail, CORES_FIELD_NAME);
-        String ram = getDetailValue(detail, RAM_FIELD_NAME);
-        String disk = getDetailValue(detail, DISK_FIELD_NAME);
-        String networkSpeed = getDetailValue(detail, NETWORK_SPEED_FIELD_NAME);
-
-        return ServerResources.builder()
-                .processorName("")
-                .ramType("DDR4")
-                .cores(cores)
-                .ram(ram)
-                .diskType("")
-                .disk(disk)
-                .coreFrequency("")
-                .networkLimit("")
-                .networkSpeed(networkSpeed)
-                .build();
     }
 }
