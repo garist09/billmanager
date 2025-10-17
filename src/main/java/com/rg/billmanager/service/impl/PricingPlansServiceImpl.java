@@ -8,7 +8,7 @@ import com.rg.billmanager.contracts.requests.PricingPlanRequest;
 import com.rg.billmanager.dto.ServerConfig;
 import com.rg.billmanager.enums.RequestType;
 import com.rg.billmanager.exception_handler.exception.InvalidRequestException;
-import com.rg.billmanager.service.BillManagerService;
+import com.rg.billmanager.service.PricingPlansService;
 import com.rg.billmanager.utility.ErrorUtility;
 import com.rg.billmanager.utility.parser.BillManagerParser;
 import com.rg.billmanager.utility.requestbuilder.UrlBuilderRegistry;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BillManagerServiceImpl implements BillManagerService {
+public class PricingPlansServiceImpl implements PricingPlansService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final UrlBuilderRegistry urlBuilderRegistry;

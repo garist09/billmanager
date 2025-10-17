@@ -4,6 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rg.billmanager.contracts.requests.ExtendOrderRequest;
 import com.rg.billmanager.contracts.requests.CreateOrderRequest;
 import com.rg.billmanager.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +23,20 @@ import static com.rg.billmanager.enums.FunctionName.VIRTUAL_PRIVATE_SERVERS_ORDE
 
 @RestController
 @AllArgsConstructor
+@Tag(name = "Order management", description = "Endpoints for creating and managing server orders")
 public class OrderController {
     private final OrderService orderService;
 
+    @Operation(
+            summary = "Create a Virtual Private Server (VPS) order",
+            description = "Creates a new VPS order based on the provided request details.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Order created successfully",
+                            content = @Content(mediaType = "application/json")),
+                    @ApiResponse(responseCode = "400", description = "Invalid order request", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+            }
+    )
     @PostMapping(path = "/vps/order")
     public ResponseEntity<?> createVirtualPrivateServerOrder(@RequestBody CreateOrderRequest createOrderRequest)
             throws JsonProcessingException {
@@ -36,6 +51,16 @@ public class OrderController {
         ));
     }
 
+    @Operation(
+            summary = "Create a Dedicated Server order",
+            description = "Creates a new dedicated server order based on the provided request details.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Order created successfully",
+                            content = @Content(mediaType = "application/json")),
+                    @ApiResponse(responseCode = "400", description = "Invalid order request", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+            }
+    )
     @PostMapping(path = "/ds/order")
     public ResponseEntity<?> createDedicatedServerOrder(@RequestBody CreateOrderRequest createOrderRequest)
             throws JsonProcessingException {
@@ -50,6 +75,16 @@ public class OrderController {
         ));
     }
 
+    @Operation(
+            summary = "Create a Server Auction order",
+            description = "Creates a new server auction order based on the provided request details.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Order created successfully",
+                            content = @Content(mediaType = "application/json")),
+                    @ApiResponse(responseCode = "400", description = "Invalid order request", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+            }
+    )
     @PostMapping(path = "/auction/order")
     public ResponseEntity<?> createServerAuctionOrder(@RequestBody CreateOrderRequest createOrderRequest)
             throws JsonProcessingException {
@@ -64,6 +99,16 @@ public class OrderController {
         ));
     }
 
+    @Operation(
+            summary = "Extend an existing service order",
+            description = "Extends the duration of an existing service based on the provided order details.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Order extended successfully",
+                            content = @Content(mediaType = "application/json")),
+                    @ApiResponse(responseCode = "400", description = "Invalid extension request", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+            }
+    )
     @PostMapping(path = "/extend-order")
     public ResponseEntity<?> extendService(@RequestBody ExtendOrderRequest extendOrderRequest)
             throws JsonProcessingException {
@@ -74,19 +119,4 @@ public class OrderController {
                 "orderId", extendOrderRequest.getOrderId()
         ));
     }
-
-//    @GetMapping(path = "/cart-items")
-//    public ResponseEntity<CartItemsResponse> getCartItems(@RequestParam String baseUrl, @RequestParam String authData)
-//            throws JsonProcessingException {
-//        return ResponseEntity.ok(orderService.getCartItems(baseUrl, authData));
-//    }
-//
-//    @PostMapping(path = "/remove-cart-item")
-//    public ResponseEntity<?> removeCartItem(@RequestBody DeleteOrderRequest deleteOrderRequest) throws JsonProcessingException {
-//        orderService.removeCartItem(deleteOrderRequest);
-//        return ResponseEntity.ok(Map.of(
-//                "status", "success",
-//                "message", "Item successfully have been removed"
-//        ));
-//    }
 }

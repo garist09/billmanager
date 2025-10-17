@@ -13,8 +13,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI().info(new Info()
                 .title("Bill Manager")
-                .description("Bill Manager Rest API")
-                .contact(new Contact().name("RO"))
+                .description("Comprehensive Bill Manager API documentation for internal and external use")
+                .contact(new Contact().name("Cloud sell"))
                 .version("1.0.0"));
     }
 }

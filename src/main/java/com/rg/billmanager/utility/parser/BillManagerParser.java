@@ -55,13 +55,13 @@ public class BillManagerParser {
     private static final String MHz_EN = "MHz";
     private static final String Mb_EN = "Mb";
     private static final String GHZ_EN = "GHz";
-    public static final String EURO_SYMBOL = "€";
-    public static final String EUR_NAME = "eur";
-    public static final String DOLLAR_SYMBOL = "$";
-    public static final String DOLLAR_NAME = "usd";
-    public static final String RUB_SYMBOL = "₽";
-    public static final String RUB_UPPERCASE = "RUB";
-    public static final String RUB_SYMBOL_RU = "p.";
+    private static final String EURO_SYMBOL = "€";
+    private static final String EUR_NAME = "eur";
+    private static final String DOLLAR_SYMBOL = "$";
+    private static final String DOLLAR_NAME = "usd";
+    private static final String RUB_SYMBOL = "₽";
+    private static final String RUB_UPPERCASE = "RUB";
+    private static final String RUB_SYMBOL_RU = "p.";
 
     public void parseServerConfigs(JsonNode json, Map<String, String> datacenter, List<ServerConfig> serverConfigList,
                                    Integer serverConfigId) {
