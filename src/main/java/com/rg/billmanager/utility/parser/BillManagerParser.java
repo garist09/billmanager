@@ -33,16 +33,42 @@ import static com.rg.billmanager.constants.JsonFields.TITLE;
 @Component
 @RequiredArgsConstructor
 public class BillManagerParser {
+    public static final String RUB = "rub";
     private static final Logger logger = LoggerFactory.getLogger(BillManagerParser.class);
     private static final String VIRTUAL_SERVER_TYPE = "virtual";
     private static final String DDR_4_RAM_TYPE = "DDR4";
+    private static final String RAM_DISK = "ram/disk";
+    private static final String CORES_NETWORK_SPEED = "cores/network_speed";
+    private static final String MiB_RU = "МиБ";
+    private static final String MB_RU = "МБ";
+    private static final String GiB_RU = "ГиБ";
+    private static final String GB_EN = "GB";
+    private static final String GB_RU = "ГБ";
+    private static final String MBPS_EN = "Mbps";
+    private static final String GBPS_EN = "Gbps";
+    private static final String COUNT_NAME = "Шт.";
+    private static final String MB_EN = "MB";
+    private static final String TB_EN = "TB";
+    private static final String TB_RU = "ТБ";
+    private static final String GBPS_RU = "Гбит";
+    private static final String MHz_RU = "МГц";
+    private static final String MHz_EN = "MHz";
+    private static final String Mb_EN = "Mb";
+    private static final String GHZ_EN = "GHz";
+    public static final String EURO_SYMBOL = "€";
+    public static final String EUR_NAME = "eur";
+    public static final String DOLLAR_SYMBOL = "$";
+    public static final String DOLLAR_NAME = "usd";
+    public static final String RUB_SYMBOL = "₽";
+    public static final String RUB_UPPERCASE = "RUB";
+    public static final String RUB_SYMBOL_RU = "p.";
 
     public void parseServerConfigs(JsonNode json, Map<String, String> datacenter, List<ServerConfig> serverConfigList,
                                    Integer serverConfigId) {
         String name = datacenter.get("name");
         JsonNode servers = json.path("doc").path("list").get(0).path("elem");
         for (JsonNode server : servers) {
-            Integer externalId = server.path("id").path("$").asInt();
+            Integer externalId = server.path("id").path(DOLLAR_SYMBOL).asInt();
             ServerConfig serverConfig = parseServerConfig(externalId, server, name);
             serverConfig.setId(serverConfigId.toString());
             serverConfigList.add(serverConfig);
@@ -53,16 +79,18 @@ public class BillManagerParser {
         ServerResources serverResources = createServerResources(server);
         String name = getJsonNodeValue(server, TITLE);
         String description = getJsonNodeValue(server, DESCRIPTION);
+
         extractResourcesFromName(name, serverResources);
         extractResourcesFromDescription(description, serverResources);
         extractProcessorInfo(name, serverResources);
+        convertNetworkSpeedGbpsToMbps(serverResources);
 
         Map<String, String> billingCycleMap = new HashMap<>();
-        String currency = "€";
+        String currency = EURO_SYMBOL;
         if (server.get(PRICES) != null && server.get(PRICES).get(PRICE) != null &&
                 server.get(PRICES).get(PRICE).isArray()) {
             JsonNode pricesNode = server.get(PRICES).get(PRICE);
-            currency = pricesNode.get(0).get(CURRENCY).get("$").asText("€");
+            currency = getCurrency(pricesNode);
             fillBillingCycle(pricesNode, billingCycleMap);
         }
 
@@ -104,7 +132,7 @@ public class BillManagerParser {
     }
 
     BiFunction<String, Boolean, Integer> cleanAndConvertToMb = (value, isMemory) -> {
-        String name = isMemory ? "ram/disk" : "cores/network_speed";
+        String name = isMemory ? RAM_DISK : CORES_NETWORK_SPEED;
 
         if (value == null || value.trim().isEmpty()) {
             logger.info("     " + name + ": empty value");
@@ -115,28 +143,28 @@ public class BillManagerParser {
         logger.info("     " + name + ": initial value '" + valueStr + "'");
         int result = 0;
 
-        if (valueStr.contains("Шт.")) {
-            String cleaned = valueStr.replace("Шт.", "").trim();
+        if (valueStr.contains(COUNT_NAME)) {
+            String cleaned = valueStr.replace(COUNT_NAME, "").trim();
             result = cleaned.isEmpty() ? 0 : (int) Float.parseFloat(cleaned);
             logger.info("     " + name + ": found cores '" + valueStr + "' -> " + result);
-        } else if (valueStr.contains("МиБ")) {
-            String cleaned = valueStr.replace("МиБ", "").trim();
+        } else if (valueStr.contains(MiB_RU)) {
+            String cleaned = valueStr.replace(MiB_RU, "").trim();
             result = cleaned.isEmpty() ? 0 : (int) Float.parseFloat(cleaned);
-            logger.info("     " + name + ": found RAM '" + valueStr + "' -> " + result + "MB");
-        } else if (valueStr.contains("МБ")) {
-            String cleaned = valueStr.replace("МБ", "").trim();
+            logger.info("     " + name + ": found RAM '" + valueStr + "' -> " + result + MB_RU);
+        } else if (valueStr.contains(MB_RU)) {
+            String cleaned = valueStr.replace(MB_RU, "").trim();
             result = cleaned.isEmpty() ? 0 : (int) Float.parseFloat(cleaned);
-            logger.info("     " + name + ": found memory/disk '" + valueStr + "' -> " + result + "MB");
-        } else if (valueStr.contains("ГиБ")) {
-            String cleaned = valueStr.replace("ГиБ", "").trim();
+            logger.info("     " + name + ": found memory/disk '" + valueStr + "' -> " + result + MB_RU);
+        } else if (valueStr.contains(GiB_RU)) {
+            String cleaned = valueStr.replace(GiB_RU, "").trim();
             double gbValue = cleaned.isEmpty() ? 0 : Double.parseDouble(cleaned);
             result = (int) (gbValue * 1024);
-            logger.info("     " + name + ": found disk '" + valueStr + "' -> " + gbValue + "GB = " + result + "MB");
+            logger.info("     " + name + ": found disk '" + valueStr + "' -> " + gbValue + GB_EN + " = " + result + MB_EN);
         } else {
-            String cleaned = valueStr.replace("GB", "")
-                    .replace("ГБ", "")
-                    .replace("Mbps", "")
-                    .replace("Gbps", "")
+            String cleaned = valueStr.replace(GB_EN, "")
+                    .replace(GB_RU, "")
+                    .replace(MBPS_EN, "")
+                    .replace(GBPS_EN, "")
                     .trim();
             result = cleaned.isEmpty() ? 0 : (int) Float.parseFloat(cleaned);
 
@@ -152,9 +180,9 @@ public class BillManagerParser {
     private String getDetailValue(JsonNode detailArray, String keyName) {
         if (detailArray.isArray()) {
             for (JsonNode item : detailArray) {
-                String name = item.path("name").path("$").asText("");
+                String name = item.path("name").path(DOLLAR_SYMBOL).asText("");
                 if (name.equalsIgnoreCase(keyName)) {
-                    return item.path("value").path("$").asText("");
+                    return item.path("value").path(DOLLAR_SYMBOL).asText("");
                 }
             }
         }
@@ -166,8 +194,8 @@ public class BillManagerParser {
         String value = "";
         if (server.has(keyName)) {
             JsonNode node = server.get(keyName);
-            if (node.has("$")) {
-                value = node.get("$").asText();
+            if (node.has(DOLLAR_SYMBOL)) {
+                value = node.get(DOLLAR_SYMBOL).asText();
             }
         }
 
@@ -178,8 +206,8 @@ public class BillManagerParser {
         for (JsonNode priceNode : pricesNode) {
             JsonNode period = priceNode.get(PERIOD);
             JsonNode cost = priceNode.get(COST);
-            String billingCycle = BillingPeriod.getLabelByCode(period.path("$").asText(""));
-            String billingCost = cost.path("$").asText("");
+            String billingCycle = BillingPeriod.getLabelByCode(period.path(DOLLAR_SYMBOL).asText(""));
+            String billingCost = cost.path(DOLLAR_SYMBOL).asText("");
             billingCycleMap.put(billingCycle, billingCost);
         }
     }
@@ -290,13 +318,13 @@ public class BillManagerParser {
                 int ramValue = Integer.parseInt(matcher.group(1));
                 String matchedText = matcher.group(0).toUpperCase();
 
-                if (matchedText.contains("MB") || matchedText.contains("МБ") || matcher.group(0).contains("Mb")) {
+                if (matchedText.contains(MB_EN) || matchedText.contains(MB_RU) || matcher.group(0).contains(Mb_EN)) {
                     serverResources.setRam(ramValue);
-                    logger.info("Found RAM: " + ramValue + "MB (pattern: " + pattern + ")");
+                    logger.info("Found RAM: " + ramValue + MB_EN + " (pattern: " + pattern + ")");
                 } else {
                     serverResources.setRam(ramValue * 1024);
-                    logger.info("Found RAM: " + ramValue + "GB = " + serverResources.getRam() +
-                            "MB (pattern: " + pattern + ")");
+                    logger.info("Found RAM: " + ramValue + GB_EN + " = " + serverResources.getRam() + MB_EN +
+                            " (pattern: " + pattern + ")");
                 }
                 break;
             }
@@ -319,7 +347,7 @@ public class BillManagerParser {
                 int ramGb = Integer.parseInt(matcher.group(1));
                 int ramMb = ramGb * 1024;
                 serverResources.setRam(ramMb);
-                logger.info("Found RAM: " + ramGb + "GB = " + ramMb + "MB (pattern: " + pattern + ")");
+                logger.info("Found RAM: " + ramGb + GB_EN + " = " + ramMb + MB_EN + " (pattern: " + pattern + ")");
                 break;
             }
         }
@@ -364,13 +392,13 @@ public class BillManagerParser {
                 String matchedText = matcher.group(0).toUpperCase();
 
                 // TB -> GB -> MB
-                if (matchedText.contains("TB") || matchedText.contains("ТБ")) {
+                if (matchedText.contains(TB_EN) || matchedText.contains(TB_RU)) {
                     diskValue *= 1024; // TB → GB
                 }
                 int diskMb = (int) (diskValue * 1024);
                 serverResources.setDisk(diskMb); // GB → MB
-                logger.info("Found disk: " + diskValue + "GB = " + serverResources.getDisk() +
-                        "MB (pattern: " + pattern + ")");
+                logger.info("Found disk: " + diskValue + GB_EN + " = " + serverResources.getDisk() + MB_EN +
+                        " (pattern: " + pattern + ")");
                 break;
             }
         }
@@ -391,11 +419,11 @@ public class BillManagerParser {
             Matcher matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(cleanDescription);
             if (matcher.find()) {
                 int speedValue = Integer.parseInt(matcher.group(1));
-                if (matcher.group(0).contains("Gbps") || matcher.group(0).contains("Гбит"))
+                if (matcher.group(0).contains(GBPS_EN) || matcher.group(0).contains(GBPS_RU))
                     speedValue *= 1000; // Gbps → Mbps
                 serverResources.setNetworkSpeed(speedValue);
-                logger.info("Found network speed: " + serverResources.getNetworkSpeed() +
-                        "Mbps (pattern: " + pattern + ")");
+                logger.info("Found network speed: " + serverResources.getNetworkSpeed() + MBPS_EN +
+                        " (pattern: " + pattern + ")");
                 break;
             }
         }
@@ -414,7 +442,7 @@ public class BillManagerParser {
             Matcher matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(cleanDescription);
             if (matcher.find()) {
                 serverResources.setTraffic(Double.parseDouble(matcher.group(1)));
-                logger.info("Found traffic: " + serverResources.getTraffic() + "TB (pattern: " + pattern + ")");
+                logger.info("Found traffic: " + serverResources.getTraffic() + TB_EN + " (pattern: " + pattern + ")");
                 break;
             }
         }
@@ -466,18 +494,40 @@ public class BillManagerParser {
                 String matchedText = matcher.group(0);
                 double freqGHz;
 
-                if (matchedText.contains("МГц") || matchedText.contains("MHz")) {
+                if (matchedText.contains(MHz_RU) || matchedText.contains(MHz_EN)) {
                     freqGHz = freqValue / 1000;
-                    logger.info("Found core frequncy in MHz: " + freqValue + "MHz -> " + freqGHz +
-                            "GHz (паттерн: " + pattern + ")");
+                    logger.info("Found core frequncy in " + MHz_EN + ": " + freqValue + MHz_EN + " -> " + freqGHz +
+                            GHZ_EN + " (паттерн: " + pattern + ")");
                 } else {
                     freqGHz = freqValue;
-                    logger.info("Found core frequncy in GHz: " + freqGHz + "GHz (pattern: " + pattern + ")");
+                    logger.info("Found core frequncy in " + GHZ_EN + ": " + freqGHz + GHZ_EN +
+                            " (pattern: " + pattern + ")");
                 }
 
                 serverResources.setCoreFrequency(String.valueOf(freqGHz));
                 break;
             }
         }
+    }
+
+    private void convertNetworkSpeedGbpsToMbps(ServerResources serverResources) {
+        int networkSpeed = serverResources.getNetworkSpeed();
+        if (String.valueOf(networkSpeed).contains(GBPS_EN)) {
+            networkSpeed *= 1000;
+            serverResources.setNetworkSpeed(networkSpeed);
+        }
+    }
+
+    private String getCurrency(JsonNode pricesNode) {
+        String currency = pricesNode.get(0).get(CURRENCY).get(DOLLAR_SYMBOL).asText(EURO_SYMBOL);
+        if (currency.equals(EURO_SYMBOL) || currency.equalsIgnoreCase(EUR_NAME)) {
+            currency = EUR_NAME;
+        } else if (currency.equals(DOLLAR_SYMBOL) || currency.equalsIgnoreCase(DOLLAR_NAME)) {
+            currency = DOLLAR_NAME;
+        } else if (currency.equals(RUB_SYMBOL) || currency.equalsIgnoreCase(RUB) ||
+                currency.equalsIgnoreCase(RUB_SYMBOL_RU) || currency.equalsIgnoreCase(RUB_UPPERCASE)) {
+            currency = RUB;
+        }
+        return currency;
     }
 }
